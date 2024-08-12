@@ -1,0 +1,6 @@
+#서버 사이드 유저 권한 체크
+#로그인
+#로그아웃
+#세션 객체 타입 확장
+#JWT 객체에 access token 추가 후 session 객체에도 추가하여 fetch할 때 bearer 에 토큰 저장하여 spring boot3 리소스 서버에 전달하기
+https://stackoverflow.com/questions/69068495/how-to-get-the-provider-access-token-in-next-auth
