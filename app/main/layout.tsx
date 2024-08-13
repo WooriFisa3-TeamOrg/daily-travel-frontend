@@ -22,6 +22,7 @@ import Logout from "@/biz/components/logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { axiosInstance } from "@/biz/lib/axios";
 import { authOptions } from "@/biz/utils/authOptions";
+import { signOut } from "next-auth/react";
 
 interface LayoutProps {}
 
@@ -45,7 +46,11 @@ export default async function MainLayout({
             });
             console.log(response.data);
         } catch (e) {
-            console.log(e);
+            if ((e as any).response.status === 401) {
+                // redirect("/");
+                // signOut();
+            }
+            console.log((e as any).response.staus);
         }
     }
 

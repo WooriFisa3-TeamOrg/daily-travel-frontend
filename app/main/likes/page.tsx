@@ -1,7 +1,9 @@
+import LikesList from "@/biz/components/likes-list";
+
 export default async function LikesPage() {
     return (
         <div>
-            <p>hello Likes Page</p>
+            <LikesList />
         </div>
     );
 }

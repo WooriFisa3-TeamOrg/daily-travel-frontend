@@ -3,7 +3,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getPosts } from "../api/postApi";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { decode } from "next-auth/jwt";
 import { Button } from "@/components/ui/button";
 import { HeartIcon } from "lucide-react";
@@ -11,12 +11,11 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 
-const PostList = () => {
+const LikesList = () => {
     // const { data: session, status } = useSession();
     // const { data } = useSuspenseQuery(getPosts);
 
     const testarr = [1, 2, 3, 4];
-    const [liked, setLiked] = useState(false);
 
     return (
         <main className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:p-6">
@@ -54,8 +53,7 @@ const PostList = () => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => setLiked(!liked)}
-                                className={`z-20`}
+                                className="z-20"
                             >
                                 <HeartIcon className="w-4 h-4" />
                                 <span className="sr-only">Like</span>
@@ -87,4 +85,4 @@ const PostList = () => {
     );
 };
 
-export default PostList;
+export default LikesList;

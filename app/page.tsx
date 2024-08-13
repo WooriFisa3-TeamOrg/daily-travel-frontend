@@ -13,13 +13,14 @@ import Login from "@/biz/components/login";
 import { useSession } from "next-auth/react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { authOptions } from "@/biz/utils/authOptions";
 
 export default async function Home() {
     const queryClient = getQueryClient();
 
     void queryClient.prefetchQuery(getPosts);
 
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (session) {
         redirect("/main");
     }
