@@ -6,6 +6,7 @@ import KeycloakProvider, {
 import { OAuthConfig } from "next-auth/providers/oauth";
 import GoogleProvider from "next-auth/providers/google";
 import { axiosInstance } from "@/biz/lib/axios";
+import { redirect } from "next/navigation";
 
 declare module "next-auth/jwt" {
     interface JWT {
@@ -49,25 +50,13 @@ export const authOptions: AuthOptions = {
             // console.log("Sign in", profile);
             if (account) {
                 try {
+                    console.log(account.id_token);
                     console.log("Fetching /hello with access token");
-                    // const response = await fetch(
-                    //     process.env.RESOURCE_SERVER_URL + "/hello",
-                    //     {
-                    //         headers: {
-                    //             Authorization: `Bearer ${account.id_token}`,
-                    //         },
-                    //         cache: "no-store",
-                    //     }
-                    // );
                     const response = await axiosInstance.get("/hello", {
                         headers: {
                             Authorization: `Bearer ${account.id_token}`,
                         },
                     });
-
-                    console.log(response.status);
-                    console.log(response.data);
-                    // console.log(await response.text());
                 } catch (e) {
                     console.error(e);
                 }

@@ -10,11 +10,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { SparklesCore } from "@/components/ui/sparkles";
 import Login from "@/biz/components/login";
+import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
     const queryClient = getQueryClient();
 
     void queryClient.prefetchQuery(getPosts);
+
+    const session = await getServerSession();
+    if (session) {
+        redirect("/main");
+    }
 
     //자유 여행, 함께하는 일정 공유
     const words = [
