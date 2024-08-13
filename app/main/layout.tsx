@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import Logout from "@/biz/components/logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { axiosInstance } from "@/biz/lib/axios";
+import { authOptions } from "@/biz/utils/authOptions";
 
 interface LayoutProps {}
 
@@ -28,9 +30,23 @@ export default async function MainLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session) {
         redirect("/");
+    }
+    if (session) {
+        console.log(session.user.id_token);
+        try {
+            const response = await axiosInstance.get("/hello", {
+                headers: {
+                    Authorization: `Bearer ${session.user.id_token}`,
+                    // "Cache-Control": "no-cache",
+                },
+            });
+            console.log(response.data);
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     return (
