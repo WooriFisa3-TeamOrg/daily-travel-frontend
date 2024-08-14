@@ -42,7 +42,7 @@ const Profile: FC<ProfileProps> = ({}) => {
                                         variant="outline"
                                         size="icon"
                                         className="absolute top-0 right-0 -translate-x-2 -translate-y-2 rounded-full"
-                                        onClick={() => setIsEditing(false)}
+                                        onClick={() => {}}
                                     >
                                         <FilePenIcon className="w-5 h-5" />
                                         <span className="sr-only">
@@ -99,7 +99,7 @@ const Profile: FC<ProfileProps> = ({}) => {
                                 <h2 className="text-lg md:text-xl font-semibold">
                                     Latest Favorites
                                 </h2>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <Link
                                         href="#"
                                         className="group"
