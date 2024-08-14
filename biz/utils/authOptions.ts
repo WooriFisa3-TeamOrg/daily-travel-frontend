@@ -51,17 +51,30 @@ export const authOptions: AuthOptions = {
             // console.log("Sign in", profile);
             if (account) {
                 try {
-                    console.log(account.id_token);
                     console.log("Fetching /hello with access token");
+                    console.log(account.id_token);
 
                     //sign in
-                    const response = await axiosInstance.post("/v1/user", {
-                        headers: {
-                            Authorization: `Bearer ${account.id_token}`,
-                        },
-                    });
+                    // const response = await axiosInstance.post("/v1/user", {
+                    //     headers: {
+                    //         "Cache-Control": "no-cache",
+                    //         Authorization: `Bearer ${account.id_token}`,
+                    //         "Content-Type": "application/json",
+                    //     },
+                    // });
+                    const response = await fetch(
+                        "http://localhost:3000/backend/v1/user",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Cache-Control": "no-cache",
+                                Authorization: `Bearer ${account.id_token}`,
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
                 } catch (e) {
-                    console.error(e);
+                    console.error((e as any).message);
                 }
             }
         },
