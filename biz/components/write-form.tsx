@@ -46,7 +46,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
             );
         }
         hashtags.forEach((hashtag) => {
-            formData.append("hashtag", hashtag);
+            formData.append("hashtags", hashtag);
         });
 
         try {
