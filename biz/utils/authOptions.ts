@@ -53,7 +53,9 @@ export const authOptions: AuthOptions = {
                 try {
                     console.log(account.id_token);
                     console.log("Fetching /hello with access token");
-                    const response = await axiosInstance.get("/hello", {
+
+                    //sign in
+                    const response = await axiosInstance.post("/v1/user", {
                         headers: {
                             Authorization: `Bearer ${account.id_token}`,
                         },

@@ -3,6 +3,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CheckIcon, FilePenIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { FC, useState } from "react";
 
@@ -11,6 +12,7 @@ interface ProfileProps {}
 const Profile: FC<ProfileProps> = ({}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState("John Doe");
+    const { data: session } = useSession();
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen ">
@@ -32,10 +34,12 @@ const Profile: FC<ProfileProps> = ({}) => {
                             <div className="relative">
                                 <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-background">
                                     <AvatarImage
-                                        src="/placeholder-user.jpg"
+                                        src={session!.user.image!}
                                         alt="@shadcn"
                                     />
-                                    <AvatarFallback>JD</AvatarFallback>
+                                    <AvatarFallback>
+                                        {/* {session?.user.name} */}
+                                    </AvatarFallback>
                                 </Avatar>
                                 {isEditing && (
                                     <Button

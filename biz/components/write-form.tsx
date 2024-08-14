@@ -17,10 +17,23 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
     const [content, setContent] = useState("");
     const [placeName, setPlaceName] = useState("");
     const [imageFiles, setImageFiles] = useState<FileList | null>(null);
-    const [hashtag, setHashtag] = useState("");
+    const [hashtags, setHashtags] = useState<string[]>([]);
     const { data: session } = useSession();
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleHashtagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            const newHashtag = (e.target as HTMLInputElement).value.trim();
+            if (newHashtag) {
+                setHashtags([...hashtags, newHashtag]);
+                (e.target as HTMLInputElement).value = "";
+            }
+        }
+    };
+
+    const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        if ((e as any).key === "Enter") {
+            return;
+        }
         e.preventDefault();
 
         const formData = new FormData();
@@ -32,7 +45,9 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                 formData.append("imageFiles", image)
             );
         }
-        formData.append("hashtag", hashtag);
+        hashtags.forEach((hashtag) => {
+            formData.append("hashtag", hashtag);
+        });
 
         try {
             const response = await axiosInstance.post("/v1/post", formData, {
@@ -41,31 +56,34 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                 },
             });
 
-            if (response.status === 200) {
-                console.log("Post submitted successfully!");
-                toast({
-                    title: "게시글 작성 완료",
-                    description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
-                });
-            } else {
-                console.error("Failed to submit post");
-                toast({
-                    variant: "destructive",
-                    title: "서버 오류",
-                    description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
-                });
-            }
+            console.log("Post submitted successfully!");
+            toast({
+                title: "게시글 작성 완료",
+                description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+            });
         } catch (error) {
-            console.error(
-                "An error occurred while submitting the post:",
-                error
-            );
+            console.error(error);
+            toast({
+                variant: "destructive",
+                title: "서버 오류",
+                description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+            });
         }
     };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault(); // 엔터키 입력을 방지
+        }
+    };
+
     return (
         <Card className="w-full max-w-lg">
             <CardContent className="py-4">
-                <form onSubmit={handleSubmit}>
+                <form
+                    onSubmit={(e) => e.preventDefault()}
+                    onKeyDown={handleKeyDown}
+                >
                     <div className="py-2">
                         <Label htmlFor="title">제목</Label>
                         <Input
@@ -107,12 +125,24 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                         <Label htmlFor="hashtag">해시태그</Label>
                         <Input
                             placeholder="Enter hashtags"
-                            value={hashtag}
-                            onChange={(e) => setHashtag(e.target.value)}
+                            onKeyDown={handleHashtagInput}
                         />
                     </div>
+                    {hashtags.length > 0 && (
+                        <div className="space-y-1">
+                            <Label>Hashtag List:</Label>
+                            {hashtags.map((hashtag, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center gap-2"
+                                >
+                                    <span>#{hashtag}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <div className="py-5 flex w-full">
-                        <Button type="submit" className="ml-auto">
+                        <Button className="ml-auto" onClick={handleSubmit}>
                             Post
                         </Button>
                     </div>
