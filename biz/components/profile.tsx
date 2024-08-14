@@ -2,17 +2,32 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
 import { CheckIcon, FilePenIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
+import { getUserInfo } from "../api/users-api";
+import { UserGetResponse } from "../types/User";
 
 interface ProfileProps {}
 
 const Profile: FC<ProfileProps> = ({}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState("John Doe");
+    const [picture, setPicture] = useState("");
     const { data: session } = useSession();
+
+    const { data } = useQuery(getUserInfo(session?.user.id_token!));
+
+    useEffect(() => {
+        if (data) {
+            console.log("PROFILE DATA");
+            console.log(data);
+            setName(data.data.nickname);
+            setPicture(data.data.profileImagePath);
+        }
+    }, [data]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen ">
@@ -33,10 +48,7 @@ const Profile: FC<ProfileProps> = ({}) => {
                         <div className="absolute inset-0  flex items-center justify-center">
                             <div className="relative">
                                 <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-background">
-                                    <AvatarImage
-                                        src={session!.user.image!}
-                                        alt="@shadcn"
-                                    />
+                                    <AvatarImage src={picture} alt="@shadcn" />
                                     <AvatarFallback>
                                         {/* {session?.user.name} */}
                                     </AvatarFallback>

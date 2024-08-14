@@ -12,6 +12,7 @@ const nextConfig = {
     env: {
         AXIOS_BASE_URL: process.env.AXIOS_BASE_URL,
     },
+    reactStrictMode: true,
 };
 
 export default nextConfig;
