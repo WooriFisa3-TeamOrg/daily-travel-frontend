@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { FC, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import { useSession } from "next-auth/react";
+import { toast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 interface WriteFormProps {}
 
@@ -33,7 +35,6 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
         formData.append("hashtag", hashtag);
 
         try {
-            //axios post 작성, bearer token을 헤더에 추가
             const response = await axiosInstance.post("/v1/post", formData, {
                 headers: {
                     Authorization: `Bearer ${session?.user.id_token}`,
@@ -41,11 +42,18 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
             });
 
             if (response.status === 201) {
-                // 성공적으로 포스트를 작성한 후의 처리
                 console.log("Post submitted successfully!");
+                toast({
+                    title: "게시글 작성 완료",
+                    description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+                });
             } else {
-                // 오류 처리
                 console.error("Failed to submit post");
+                toast({
+                    variant: "destructive",
+                    title: "서버 오류",
+                    description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+                });
             }
         } catch (error) {
             console.error(

@@ -1,7 +1,9 @@
+import Profile from "@/biz/components/profile";
+
 export default async function ProfilePage() {
     return (
-        <div>
-            <p>hello Profile Page</p>
+        <div className="flex justify-center">
+            <Profile />
         </div>
     );
 }

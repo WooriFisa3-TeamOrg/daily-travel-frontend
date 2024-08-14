@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/biz/utils/authOptions";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/biz/providers/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const fontSans = FontSans({
     subsets: ["latin"],
@@ -42,6 +43,7 @@ export default async function RootLayout({
                             disableTransitionOnChange
                         >
                             {children}
+                            <Toaster />
                         </ThemeProvider>
                     </ReactQueryProvider>
                 </NextAuthProvider>
