@@ -41,7 +41,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                 },
             });
 
-            if (response.status === 201) {
+            if (response.status === 200) {
                 console.log("Post submitted successfully!");
                 toast({
                     title: "게시글 작성 완료",
