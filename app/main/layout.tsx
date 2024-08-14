@@ -21,7 +21,7 @@ import {
 import Logout from "@/biz/components/logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { axiosInstance } from "@/biz/lib/axios";
-import { authOptions } from "@/biz/utils/authOptions";
+import { authOptions } from "@/biz/lib/authOptions";
 import { signOut } from "next-auth/react";
 
 interface LayoutProps {}
@@ -32,25 +32,35 @@ export default async function MainLayout({
     children: React.ReactNode;
 }>) {
     const session = await getServerSession(authOptions);
+    console.log("SESSION");
+    console.log(session);
+
     if (!session) {
-        redirect("/");
+        redirect("/logout");
     }
+
     if (session) {
         console.log(session.user.id_token);
+        let statusCode = 0;
         try {
-            const response = await axiosInstance.get("/hello", {
-                headers: {
-                    Authorization: `Bearer ${session.user.id_token}`,
-                    // "Cache-Control": "no-cache",
-                },
-            });
-            console.log(response.data);
+            //jwt validation
+            const response = await fetch(
+                "http://localhost:3000/backend/hello",
+                {
+                    headers: {
+                        Authorization: `Bearer ${session.user.id_token}`,
+                    },
+                }
+            );
+            console.log(await response.text());
+            console.log(response.status);
+            statusCode = response.status;
         } catch (e) {
-            if ((e as any).response.status === 401) {
-                // redirect("/");
-                // signOut();
-            }
-            console.log((e as any).response.staus);
+            console.log(e);
+        }
+
+        if (statusCode === 401) {
+            redirect("/logout");
         }
     }
 

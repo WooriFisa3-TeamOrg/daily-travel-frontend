@@ -7,6 +7,7 @@ import { OAuthConfig } from "next-auth/providers/oauth";
 import GoogleProvider from "next-auth/providers/google";
 import { axiosInstance } from "@/biz/lib/axios";
 import { redirect } from "next/navigation";
+import { signIn } from "@/biz/api/users-api";
 
 declare module "next-auth/jwt" {
     interface JWT {
@@ -62,17 +63,19 @@ export const authOptions: AuthOptions = {
                     //         "Content-Type": "application/json",
                     //     },
                     // });
-                    const response = await fetch(
-                        "http://localhost:3000/backend/v1/user",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Cache-Control": "no-cache",
-                                Authorization: `Bearer ${account.id_token}`,
-                                "Content-Type": "application/json",
-                            },
-                        }
-                    );
+                    // const response = await fetch(
+                    //     "http://localhost:3000/backend/v1/user",
+                    //     {
+                    //         method: "POST",
+                    //         headers: {
+                    //             "Cache-Control": "no-cache",
+                    //             Authorization: `Bearer ${account.id_token}`,
+                    //             "Content-Type": "application/json",
+                    //         },
+                    //     }
+                    // );
+                    const status = await signIn(account.id_token!);
+                    console.log("Sign in status", status);
                 } catch (e) {
                     console.error((e as any).message);
                 }

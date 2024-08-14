@@ -9,7 +9,7 @@ interface LogoutProps {}
 const Logout: FC<LogoutProps> = ({}) => {
     return (
         <Button
-            className="bg-transparent  text-white hover:bg-slate-50 hover:bg-opacity-10 flex items-center gap-2 p-0"
+            className="bg-transparent  text-black dark:text-white hover:bg-slate-50 hover:bg-opacity-10 flex items-center gap-2 p-0"
             onClick={() => {
                 signOut();
             }}

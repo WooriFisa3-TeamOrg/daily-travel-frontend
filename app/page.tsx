@@ -13,7 +13,7 @@ import Login from "@/biz/components/login";
 import { useSession } from "next-auth/react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/biz/utils/authOptions";
+import { authOptions } from "@/biz/lib/authOptions";
 
 export default async function Home() {
     const queryClient = getQueryClient();
