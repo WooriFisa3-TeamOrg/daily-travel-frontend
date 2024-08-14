@@ -1,7 +1,9 @@
+import WriteForm from "@/biz/components/write-form";
+
 export default async function WritePage() {
     return (
-        <div>
-            <p>Write something here</p>
+        <div className="flex justify-center py-10">
+            <WriteForm />
         </div>
     );
 }

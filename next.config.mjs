@@ -9,6 +9,9 @@ const nextConfig = {
             },
         ];
     },
+    env: {
+        AXIOS_BASE_URL: process.env.AXIOS_BASE_URL,
+    },
 };
 
 export default nextConfig;
