@@ -24,12 +24,10 @@ const Profile: FC<ProfileProps> = ({}) => {
     const hiddenFileInput = useRef<HTMLInputElement>(null);
     const { data: session, status } = useSession();
 
-    const queryClient = getQueryClient();
     const { data } = useQuery(getUserInfo(session?.user.id_token!));
     console.log(data);
 
-    const [queryLoaded, setQueryLoaded] = useState(false);
-
+    const queryClient = getQueryClient();
     const mutation = useMutation({
         mutationFn: async () => {
             try {
@@ -76,7 +74,6 @@ const Profile: FC<ProfileProps> = ({}) => {
             console.log(data);
             setName(data.data.nickname);
             setPicture(data.data.profileImagePath);
-            setQueryLoaded(true);
         }
     }, [data]);
 
@@ -198,91 +195,12 @@ const Profile: FC<ProfileProps> = ({}) => {
                                 <h2 className="text-lg md:text-xl font-semibold">
                                     Latest Favorites
                                 </h2>
-                                {queryLoaded &&
-                                    data.data.likedPosts.map((post: any) => (
-                                        <div
-                                            key={post.id}
-                                            className="relative overflow-hidden rounded-lg group border border-muted"
-                                        >
-                                            <Link
-                                                href={`/main/posts/${post.id}`}
-                                                className="absolute inset-0 z-10"
-                                                prefetch={false}
-                                            >
-                                                <span className="sr-only">
-                                                    View
-                                                </span>
-                                            </Link>
-                                            <div className="flex items-center p-4 bg-background">
-                                                <Avatar className="mr-2">
-                                                    <AvatarImage
-                                                        src={post.authorProfile}
-                                                        alt={post.author}
-                                                    />
-                                                    <AvatarFallback>
-                                                        {post.author.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="font-small">
-                                                            {post.author}
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                            {/* <span>San Francisco</span> */}
-                                                            <Separator orientation="vertical" />
-                                                            <time>
-                                                                {timeAgo(
-                                                                    post.creationDate
-                                                                )}
-                                                            </time>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <img
-                                                src={
-                                                    post.imageFiles[0] ||
-                                                    "/150x150.png"
-                                                }
-                                                alt={post.title}
-                                                width={400}
-                                                height={300}
-                                                className="object-cover w-full h-60"
-                                                style={{
-                                                    aspectRatio: "400/300",
-                                                    objectFit: "cover",
-                                                }}
-                                            />
-                                            <div className="p-4 bg-background">
-                                                <h3 className="text-lg font-semibold md:text-xl">
-                                                    {post.title}
-                                                </h3>
-                                                {post.hashtags.map(
-                                                    (
-                                                        tag: string,
-                                                        index: number
-                                                    ) => {
-                                                        if (index < 3)
-                                                            return (
-                                                                <div
-                                                                    key={index}
-                                                                    className="w-fit bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground my-2"
-                                                                >
-                                                                    #{tag}
-                                                                </div>
-                                                            );
-                                                    }
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
                             </div>
                             <div className="grid gap-2">
                                 <h2 className="text-lg md:text-xl font-semibold">
                                     Latest Post
                                 </h2>
-                                {queryLoaded && (
+                                {data && (
                                     <div className="relative overflow-hidden rounded-lg group border border-muted">
                                         <Link
                                             href={`/main/posts/${data?.data.recentPost.id}`}

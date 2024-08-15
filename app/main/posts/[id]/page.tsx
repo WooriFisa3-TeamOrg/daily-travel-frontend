@@ -1,4 +1,5 @@
 "use client";
+import { doLike } from "@/biz/api/post-api";
 import { getQueryClient } from "@/biz/providers/get-query-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,7 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 export default function PostDetailPage() {
+    const [like, setLike] = useState(false);
     const [comment, setComment] = useState("");
     const params = useParams();
     const { data: session } = useSession();
@@ -31,6 +33,12 @@ export default function PostDetailPage() {
             return data.json();
         },
     });
+
+    const handleLike = async () => {
+        setLike(!like);
+        await doLike(session!.user.id_token!, post.data.id);
+        queryClient.invalidateQueries();
+    };
 
     const { data: profile } = useQuery({
         queryKey: ["user-info"],
@@ -58,6 +66,8 @@ export default function PostDetailPage() {
                 Authorization: `Bearer ${session?.user.id_token}`,
             },
         });
+
+        setComment("");
 
         return res.status;
     };
@@ -146,7 +156,7 @@ export default function PostDetailPage() {
                 <div className="grid grid-cols-3 gap-4 mb-6">
                     {post.data.images.map((image: string, index: number) => (
                         <img
-                            key={index}
+                            key={`images_${index}`}
                             src={image}
                             width={300}
                             height={200}
@@ -180,7 +190,14 @@ export default function PostDetailPage() {
                     />
                 </div> */}
                 <div className="flex items-center gap-2 mb-4">
-                    <Button variant="ghost" size="icon">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                            handleLike();
+                        }}
+                        className={`${like ? "text-red-500" : ""}`}
+                    >
                         <HeartIcon className="w-5 h-5" />
                         <span className="sr-only">Like</span>
                     </Button>
@@ -195,7 +212,7 @@ export default function PostDetailPage() {
                     {post.data.hashtags.map(
                         (hashtag: string, index: number) => (
                             <div
-                                key={index}
+                                key={`hashtag_${index}`}
                                 className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground"
                             >
                                 #{hashtag}
@@ -238,6 +255,7 @@ export default function PostDetailPage() {
                                     placeholder="Write your comment..."
                                     className="rounded-md border border-muted px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                                     onChange={(e) => setComment(e.target.value)}
+                                    value={comment}
                                 />
                                 <Button
                                     className="ml-auto"
@@ -252,7 +270,10 @@ export default function PostDetailPage() {
 
                     {post.data.comments.map((comment: any, index: number) => (
                         <div className="flex items-start gap-4">
-                            <div key={index} className="flex items-start gap-4">
+                            <div
+                                key={`comment_${index}`}
+                                className="flex items-start gap-4"
+                            >
                                 <Avatar className="w-10 h-10 border rounded-full">
                                     <AvatarImage
                                         src={comment.profileImagePath}
@@ -277,26 +298,6 @@ export default function PostDetailPage() {
                             </div>
                         </div>
                     ))}
-
-                    {/* <div className="flex items-start gap-4">
-                        <Avatar className="w-10 h-10 border">
-                            <AvatarImage src="" alt="@shadcn" />
-                            <AvatarFallback>JD</AvatarFallback>
-                        </Avatar>
-                        <div className="grid gap-2">
-                            <div className="flex items-center gap-2">
-                                <div className="font-medium">John Doe</div>
-                                <div className="text-xs text-muted-foreground">
-                                    2 days ago
-                                </div>
-                            </div>
-                            <div>
-                                Wow, this looks like an amazing trip! I've
-                                always wanted to visit Yosemite. Your photos are
-                                stunning.
-                            </div>
-                        </div>
-                    </div> */}
                 </div>
             </div>
         </div>
