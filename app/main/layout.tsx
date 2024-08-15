@@ -28,7 +28,7 @@ import { getUserInfo } from "@/biz/api/users-api";
 import AvatarAside from "@/biz/components/avatar-aside";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
-interface LayoutProps { }
+interface LayoutProps {}
 
 export default async function MainLayout({
     children,
@@ -44,7 +44,18 @@ export default async function MainLayout({
     const queryClient = getQueryClient();
 
     void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
+    // void queryClient.prefetchQuery({
+    //     queryKey: ["likedPosts"],
+    //     queryFn: async () => {
+    //         const res = await axiosInstance.get(`/v1/likes?postId=${}`, {
+    //             headers: {
+    //                 Authorization: `Bearer ${session.user.id_token}`,
+    //             },
+    //         });
 
+    //         return res.data;
+    //     },
+    // });
 
     if (session) {
         console.log(session.user.id_token);

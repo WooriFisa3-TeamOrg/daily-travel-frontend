@@ -12,10 +12,9 @@ import { UserGetResponse } from "../types/User";
 import { getQueryClient } from "../providers/get-query-client";
 import { axiosInstance } from "../lib/axios";
 
-interface ProfileProps { }
+interface ProfileProps {}
 
-
-const Profile: FC<ProfileProps> = ({ }) => {
+const Profile: FC<ProfileProps> = ({}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState("");
     const [picture, setPicture] = useState("");
@@ -31,8 +30,7 @@ const Profile: FC<ProfileProps> = ({ }) => {
             try {
                 console.log("MUTATION PROFILE");
                 let formData = new FormData();
-                if (imageFile)
-                    formData.append("profileImageFile", imageFile);
+                if (imageFile) formData.append("profileImageFile", imageFile);
                 formData.append("nickname", name);
                 const { data } = await axiosInstance.put("/v1/user", formData, {
                     headers: {
@@ -46,10 +44,12 @@ const Profile: FC<ProfileProps> = ({ }) => {
             }
         },
         onSuccess: async () => {
-            return await queryClient.invalidateQueries({
-                queryKey: ["user-info"],
-            })
-        }
+            // return await queryClient.invalidateQueries({
+            //     queryKey: ["user-info"],
+            // });
+
+            return await queryClient.invalidateQueries();
+        },
     });
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +104,9 @@ const Profile: FC<ProfileProps> = ({ }) => {
                                             htmlFor="profile-image-upload"
                                             className="absolute top-0 right-0 -translate-x-2 -translate-y-2 rounded-full cursor-pointer"
                                         >
-                                            <span className="sr-only">Edit profile image</span>
+                                            <span className="sr-only">
+                                                Edit profile image
+                                            </span>
                                             <input
                                                 id="profile-image-upload"
                                                 type="file"
@@ -124,7 +126,9 @@ const Profile: FC<ProfileProps> = ({ }) => {
                                             }}
                                         >
                                             <CameraIcon className="w-5 h-5 text-white" />
-                                            <span className="sr-only">Save profile</span>
+                                            <span className="sr-only">
+                                                Save profile
+                                            </span>
                                         </Button>
                                     </>
                                 )}

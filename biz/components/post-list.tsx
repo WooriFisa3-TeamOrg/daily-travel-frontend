@@ -1,7 +1,11 @@
 "use client";
 
-import { useInfiniteQuery, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { getPosts } from "../api/post-api";
+import {
+    useInfiniteQuery,
+    useQuery,
+    useSuspenseQuery,
+} from "@tanstack/react-query";
+import { doLike, getPosts } from "../api/post-api";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { decode } from "next-auth/jwt";
@@ -10,23 +14,21 @@ import { HeartIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
+import { timeAgo } from "@/biz/lib/time-util";
+import { axiosInstance } from "../lib/axios";
+import { getQueryClient } from "../providers/get-query-client";
 
 const PostList = () => {
     const { data: session } = useSession();
-    const testarr = [1, 2, 3, 4];
     const [liked, setLiked] = useState(false);
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        status,
-    } = useInfiniteQuery({
-        queryKey: ["posts"],
-        queryFn: ({ pageParam = 0 }) => getPosts(session!.user.id_token!, pageParam, 20),
-        initialPageParam: 0,
-        getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
-    });
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+        useInfiniteQuery({
+            queryKey: ["posts"],
+            queryFn: ({ pageParam = 0 }) =>
+                getPosts(session!.user.id_token!, pageParam, 20),
+            initialPageParam: 0,
+            getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
+        });
 
     const observerRef = useRef<HTMLDivElement | null>(null);
 
@@ -55,8 +57,12 @@ const PostList = () => {
 
     const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
 
-    const handleLike = (postId: number) => {
+    const queryClient = getQueryClient();
+
+    const handleLike = async (postId: number) => {
         setLikedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }));
+        await doLike(session!.user.id_token!, postId);
+        queryClient.invalidateQueries();
     };
 
     if (status === "pending") return <p>Loading...</p>;
@@ -80,20 +86,26 @@ const PostList = () => {
                             <span className="sr-only">View</span>
                         </Link>
                         <div className="flex items-center p-4 bg-background">
-                            {/* <Avatar className="mr-2">
+                            <Avatar className="mr-2">
                                 <AvatarImage
-                                    src={post.authorImage || "/placeholder-user.jpg"}
+                                    src={post.authorProfile}
                                     alt={post.author}
                                 />
-                                <AvatarFallback>{post.author.charAt(0)}</AvatarFallback>
-                            </Avatar> */}
+                                <AvatarFallback>
+                                    {post.author.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
                             <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                    <div className="font-medium">{post.author}</div>
+                                    <div className="font-small">
+                                        {post.author}
+                                    </div>
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                        <span>{post.location}</span>
+                                        {/* <span>San Francisco</span> */}
                                         <Separator orientation="vertical" />
-                                        <time>{post.postedAt}</time>
+                                        <time>
+                                            {timeAgo(post.creationDate)}
+                                        </time>
                                     </div>
                                 </div>
                             </div>
@@ -101,7 +113,9 @@ const PostList = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => handleLike(post.id)}
-                                className={`z-20 ${likedPosts[post.id] ? "text-red-500" : ""}`}
+                                className={`z-20 ${
+                                    likedPosts[post.id] ? "text-red-500" : ""
+                                }`}
                             >
                                 <HeartIcon className="w-4 h-4" />
                                 <span className="sr-only">Like</span>
@@ -119,16 +133,28 @@ const PostList = () => {
                             }}
                         />
                         <div className="p-4 bg-background">
-                            <h3 className="text-lg font-semibold md:text-xl">{post.title}</h3>
-                            {post.hashtags.map((tag: string) => (
-                                <p className="text-sm text-muted-foreground">#{tag}</p>
-
-                            ))}
+                            <h3 className="text-lg font-semibold md:text-xl">
+                                {post.title}
+                            </h3>
+                            {post.hashtags.map((tag: string, index: number) => {
+                                if (index < 3)
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="w-fit bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground my-2"
+                                        >
+                                            #{tag}
+                                        </div>
+                                    );
+                            })}
                         </div>
                     </div>
                 ))
             )}
-            <div ref={observerRef} className="w-full h-10 flex justify-center items-center">
+            <div
+                ref={observerRef}
+                className="w-full h-10 flex justify-center items-center"
+            >
                 {isFetchingNextPage && <p>Loading more...</p>}
             </div>
         </main>

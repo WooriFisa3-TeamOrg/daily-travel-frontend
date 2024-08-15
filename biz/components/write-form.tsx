@@ -9,6 +9,7 @@ import { axiosInstance } from "../lib/axios";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { getQueryClient } from "../providers/get-query-client";
 
 interface WriteFormProps {}
 
@@ -19,6 +20,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
     const [imageFiles, setImageFiles] = useState<FileList | null>(null);
     const [hashtags, setHashtags] = useState<string[]>([]);
     const { data: session } = useSession();
+    const queryClient = getQueryClient();
 
     const handleHashtagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
@@ -53,6 +55,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
             const response = await axiosInstance.post("/v1/post", formData, {
                 headers: {
                     Authorization: `Bearer ${session?.user.id_token}`,
+                    "Content-Type": "multipart/form-data",
                 },
             });
 
@@ -61,6 +64,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                 title: "게시글 작성 완료",
                 description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
             });
+            queryClient.invalidateQueries();
         } catch (error) {
             console.error(error);
             toast({

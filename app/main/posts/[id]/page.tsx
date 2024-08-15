@@ -1,45 +1,142 @@
 "use client";
+import { getQueryClient } from "@/biz/providers/get-query-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
+import { useQuery } from "@tanstack/react-query";
 import { HeartIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 export default function PostDetailPage() {
+    const [comment, setComment] = useState("");
     const params = useParams();
-    console.log(params);
+    const { data: session } = useSession();
+    const queryClient = getQueryClient();
+    const { data: post } = useQuery({
+        queryKey: ["post-detail", params.id],
+        queryFn: async () => {
+            const data = await fetch(
+                `http://localhost:3000/backend/v1/post/${params.id}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session?.user.id_token}`,
+                    },
+                    cache: "no-cache",
+                }
+            );
+            return data.json();
+        },
+    });
+
+    const { data: profile } = useQuery({
+        queryKey: ["user-info"],
+        queryFn: async () => {
+            const res = await fetch("http://localhost:3000/backend/v1/user", {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.user.id_token}`,
+                },
+                cache: "no-cache",
+            });
+
+            return res.json();
+        },
+    });
+    console.log(post);
+    console.log(profile);
+
+    const writeCommentAction = async (postId: number, comment: string) => {
+        const res = await fetch(`http://localhost:3000/backend/v1/comments`, {
+            body: JSON.stringify({ id: postId, content: comment }),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session?.user.id_token}`,
+            },
+        });
+
+        return res.status;
+    };
+
+    // onclick button write comment
+    const writeComment = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        if ((e as any).key === "Enter") {
+            return;
+        }
+        e.preventDefault();
+
+        try {
+            const response = await writeCommentAction(post.data.id, comment);
+
+            console.log(response);
+            if (response == 200) {
+                toast({
+                    title: "댓글 작성 완료",
+                    description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+                });
+                queryClient.invalidateQueries({
+                    queryKey: ["post-detail", params.id],
+                });
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "댓글 작성 실패",
+                    description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+                });
+            }
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "서버 오류",
+                description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+            });
+        }
+    };
+
+    if (!post) {
+        return <div>error...</div>;
+    }
 
     return (
         <div className="flex justify-center">
             <div className="bg-background rounded-lg border p-6 w-full max-w-2xl">
                 <div className="flex items-center gap-4 mb-4">
-                    <Avatar className="w-10 h-10 border">
+                    <Avatar className="w-10 h-10 ">
                         <AvatarImage
-                            src="/placeholder-user.jpg"
+                            src={post.data.authorProfileImagePath}
                             alt="@shadcn"
+                            className="rounded-full"
                         />
                         <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     <div>
-                        <div className="font-medium">Olivia Davis</div>
+                        <div className="font-medium">{post.data.author}</div>
                         <div className="text-sm text-muted-foreground">
-                            <time dateTime="2023-08-13T12:34:56Z">
-                                August 13, 2023
+                            <time dateTime="2023-08-13 12:34:56">
+                                {new Date(
+                                    post.data.creationDate
+                                ).toLocaleString()}
                             </time>
                         </div>
                     </div>
                 </div>
                 <div className="mb-4">
-                    <h2 className="text-2xl font-bold">
-                        Exploring the Wonders of Yosemite National Park
-                    </h2>
+                    <h2 className="text-2xl font-bold">{post.data.title}</h2>
                     <div className="text-sm text-muted-foreground">
-                        <span>Yosemite National Park</span>
+                        <span>{post.data.placeName}</span>
                     </div>
                 </div>
                 <div className="mb-6">
                     <img
-                        src="/150x150.png"
+                        src={
+                            post.data.images.length > 0
+                                ? post.data.images[0]
+                                : "/150x150.png"
+                        }
                         width={800}
                         height={450}
                         alt="Yosemite National Park"
@@ -47,39 +144,65 @@ export default function PostDetailPage() {
                     />
                 </div>
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                    <img
-                        src="/150x150.png"
-                        width={300}
-                        height={200}
-                        alt="Yosemite National Park"
-                        className="w-full rounded-lg object-cover aspect-[3/2]"
-                    />
-                    <img
-                        src="/150x150.png"
-                        width={300}
-                        height={200}
-                        alt="Yosemite National Park"
-                        className="w-full rounded-lg object-cover aspect-[3/2]"
-                    />
-                    <img
-                        src="/150x150.png"
-                        width={300}
-                        height={200}
-                        alt="Yosemite National Park"
-                        className="w-full rounded-lg object-cover aspect-[3/2]"
-                    />
+                    {post.data.images.map((image: string, index: number) => (
+                        <img
+                            key={index}
+                            src={image}
+                            width={300}
+                            height={200}
+                            alt="Yosemite National Park"
+                            className="w-full rounded-lg object-cover aspect-[3/2]"
+                        />
+                    ))}
                 </div>
+                {/* TODO : 이미지 목록 뿌리기 */}
+                {/* <div className="grid grid-cols-3 gap-4 mb-6">
+                    <img
+                        src="/150x150.png"
+                        width={300}
+                        height={200}
+                        alt="Yosemite National Park"
+                        className="w-full rounded-lg object-cover aspect-[3/2]"
+                    />
+                    <img
+                        src="/150x150.png"
+                        width={300}
+                        height={200}
+                        alt="Yosemite National Park"
+                        className="w-full rounded-lg object-cover aspect-[3/2]"
+                    />
+                    <img
+                        src="/150x150.png"
+                        width={300}
+                        height={200}
+                        alt="Yosemite National Park"
+                        className="w-full rounded-lg object-cover aspect-[3/2]"
+                    />
+                </div> */}
                 <div className="flex items-center gap-2 mb-4">
                     <Button variant="ghost" size="icon">
                         <HeartIcon className="w-5 h-5" />
                         <span className="sr-only">Like</span>
                     </Button>
                     <div className="text-sm text-muted-foreground">
-                        <span className="font-medium">123</span> likes
+                        <span className="font-medium">
+                            {post.data.likesCount}
+                        </span>{" "}
+                        likes
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-4">
-                    <div className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground">
+                    {post.data.hashtags.map(
+                        (hashtag: string, index: number) => (
+                            <div
+                                key={index}
+                                className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground"
+                            >
+                                #{hashtag}
+                            </div>
+                        )
+                    )}
+                    {/* <div className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground">
                         #yosemite
                     </div>
                     <div className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground">
@@ -87,73 +210,77 @@ export default function PostDetailPage() {
                     </div>
                     <div className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground">
                         #adventure
-                    </div>
+                    </div> */}
                 </div>
                 <div className="prose prose-gray dark:prose-invert">
-                    <p>
-                        Yosemite National Park is a true wonder of nature, with
-                        its towering granite cliffs, cascading waterfalls, and
-                        lush forests. As I explored this magnificent landscape,
-                        I was struck by the sheer beauty and grandeur that
-                        surrounded me.
-                    </p>
-                    <p>
-                        From the iconic Half Dome to the serene Tuolumne
-                        Meadows, every step I took revealed new and breathtaking
-                        vistas. The park's diverse ecosystems, home to a rich
-                        array of wildlife, only added to the sense of awe and
-                        wonder.
-                    </p>
-                    <p>
-                        As I hiked through the trails, I couldn't help but feel
-                        a deep connection to the natural world. The tranquility
-                        and solitude of the park provided a much-needed respite
-                        from the hustle and bustle of everyday life, allowing me
-                        to truly appreciate the beauty and power of the great
-                        outdoors.
-                    </p>
-                    <p>
-                        Yosemite is a place that has the power to inspire, to
-                        challenge, and to transform. It is a testament to the
-                        enduring beauty of our planet, and a reminder of the
-                        importance of preserving and protecting these natural
-                        wonders for generations to come.
-                    </p>
+                    <p> {post.data.content}</p>
                 </div>
                 <div className="mt-8 space-y-4">
                     <h3 className="text-xl font-bold">Comments</h3>
                     {/* 댓글 입력창 */}
                     <div className="mt-8 space-y-4">
                         <div className="flex items-start gap-4">
-                            <Avatar className="w-10 h-10 border">
+                            <Avatar className="w-10 h-10 border rounded-full">
                                 <AvatarImage
-                                    src="/placeholder-user.jpg"
+                                    src={profile.data.profileImagePath}
                                     alt="@shadcn"
+                                    className="rounded-full"
                                 />
                                 <AvatarFallback>YO</AvatarFallback>
                             </Avatar>
                             <div className="grid gap-2 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <div className="font-medium">Your Name</div>
-                                    <div className="text-xs text-muted-foreground">
-                                        Just now
+                                    <div className="font-medium">
+                                        {profile.data.nickname}
                                     </div>
                                 </div>
                                 <Textarea
                                     placeholder="Write your comment..."
                                     className="rounded-md border border-muted px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                                    onChange={(e) => setComment(e.target.value)}
                                 />
-                                <Button className="ml-auto">Post</Button>
+                                <Button
+                                    className="ml-auto"
+                                    onClick={writeComment}
+                                >
+                                    Post
+                                </Button>
                             </div>
                         </div>
                     </div>
                     {/* 댓글 */}
-                    <div className="flex items-start gap-4">
+
+                    {post.data.comments.map((comment: any, index: number) => (
+                        <div className="flex items-start gap-4">
+                            <div key={index} className="flex items-start gap-4">
+                                <Avatar className="w-10 h-10 border rounded-full">
+                                    <AvatarImage
+                                        src={comment.profileImagePath}
+                                        alt="@shadcn"
+                                        className="rounded-full"
+                                    />
+                                    <AvatarFallback>JD</AvatarFallback>
+                                </Avatar>
+                                <div className="grid gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <div className="font-medium">
+                                            {comment.nickname}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {new Date(
+                                                comment.createdAt
+                                            ).toLocaleString()}
+                                        </div>
+                                    </div>
+                                    <div>{comment.content}</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* <div className="flex items-start gap-4">
                         <Avatar className="w-10 h-10 border">
-                            <AvatarImage
-                                src="/placeholder-user.jpg"
-                                alt="@shadcn"
-                            />
+                            <AvatarImage src="" alt="@shadcn" />
                             <AvatarFallback>JD</AvatarFallback>
                         </Avatar>
                         <div className="grid gap-2">
@@ -169,7 +296,7 @@ export default function PostDetailPage() {
                                 stunning.
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
