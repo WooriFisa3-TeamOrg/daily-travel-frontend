@@ -2,23 +2,68 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useQuery } from "@tanstack/react-query";
-import { CheckIcon, FilePenIcon } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { CameraIcon, CheckIcon, FilePenIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { getUserInfo } from "../api/users-api";
 import { UserGetResponse } from "../types/User";
+import { getQueryClient } from "../providers/get-query-client";
+import { axiosInstance } from "../lib/axios";
 
-interface ProfileProps {}
+interface ProfileProps { }
 
-const Profile: FC<ProfileProps> = ({}) => {
+
+const Profile: FC<ProfileProps> = ({ }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [name, setName] = useState("John Doe");
+    const [name, setName] = useState("");
     const [picture, setPicture] = useState("");
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const hiddenFileInput = useRef<HTMLInputElement>(null);
     const { data: session } = useSession();
 
     const { data } = useQuery(getUserInfo(session?.user.id_token!));
+
+    const queryClient = getQueryClient();
+    const mutation = useMutation({
+        mutationFn: async () => {
+            try {
+                console.log("MUTATION PROFILE");
+                let formData = new FormData();
+                if (imageFile)
+                    formData.append("profileImageFile", imageFile);
+                formData.append("nickname", name);
+                const { data } = await axiosInstance.put("/v1/user", formData, {
+                    headers: {
+                        Authorization: `Bearer ${session?.user.id_token}`,
+                    },
+                });
+                console.log(data);
+                setPicture(data.data.profileImagePath);
+            } catch (e) {
+                console.log(e);
+            }
+        },
+        onSuccess: async () => {
+            return await queryClient.invalidateQueries({
+                queryKey: ["user-info"],
+            })
+        }
+    });
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        console.log("IMAGE CHANGE");
+        const file = e.target.files?.[0];
+        console.log(file);
+        if (file) {
+            setImageFile(file);
+            const imageUrl = URL.createObjectURL(file);
+            setPicture(imageUrl);
+            setIsEditing(false);
+            mutation.mutate();
+        }
+    };
 
     useEffect(() => {
         if (data) {
@@ -54,17 +99,34 @@ const Profile: FC<ProfileProps> = ({}) => {
                                     </AvatarFallback>
                                 </Avatar>
                                 {isEditing && (
-                                    <Button
-                                        variant="outline"
-                                        size="icon"
-                                        className="absolute top-0 right-0 -translate-x-2 -translate-y-2 rounded-full"
-                                        onClick={() => {}}
-                                    >
-                                        <FilePenIcon className="w-5 h-5" />
-                                        <span className="sr-only">
-                                            Edit profile
-                                        </span>
-                                    </Button>
+                                    <>
+                                        <label
+                                            htmlFor="profile-image-upload"
+                                            className="absolute top-0 right-0 -translate-x-2 -translate-y-2 rounded-full cursor-pointer"
+                                        >
+                                            <span className="sr-only">Edit profile image</span>
+                                            <input
+                                                id="profile-image-upload"
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                ref={hiddenFileInput}
+                                            />
+                                        </label>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className="absolute top-0 right-0 -translate-x-2 -translate-y-2 rounded-full"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                hiddenFileInput.current!.click();
+                                            }}
+                                        >
+                                            <CameraIcon className="w-5 h-5 text-white" />
+                                            <span className="sr-only">Save profile</span>
+                                        </Button>
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -86,7 +148,10 @@ const Profile: FC<ProfileProps> = ({}) => {
                                             variant="outline"
                                             size="icon"
                                             className="rounded-full"
-                                            onClick={() => setIsEditing(false)}
+                                            onClick={() => {
+                                                setIsEditing(false);
+                                                mutation.mutate();
+                                            }}
                                         >
                                             <CheckIcon className="w-5 h-5" />
                                             <span className="sr-only">

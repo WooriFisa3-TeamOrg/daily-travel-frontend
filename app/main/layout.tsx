@@ -23,8 +23,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { axiosInstance } from "@/biz/lib/axios";
 import { authOptions } from "@/biz/lib/authOptions";
 import { signOut } from "next-auth/react";
+import { getQueryClient } from "@/biz/providers/get-query-client";
+import { getUserInfo } from "@/biz/api/users-api";
+import AvatarAside from "@/biz/components/avatar-aside";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
-interface LayoutProps {}
+interface LayoutProps { }
 
 export default async function MainLayout({
     children,
@@ -32,12 +36,15 @@ export default async function MainLayout({
     children: React.ReactNode;
 }>) {
     const session = await getServerSession(authOptions);
-    console.log("SESSION");
-    console.log(session);
 
     if (!session) {
         redirect("/logout");
     }
+
+    const queryClient = getQueryClient();
+
+    void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
+
 
     if (session) {
         console.log(session.user.id_token);
@@ -71,13 +78,16 @@ export default async function MainLayout({
                 <div className="hidden flex-col border-r bg-background pl-20 pt-20 pr-10 h-full sm:flex">
                     <div className="flex flex-col items-start gap-4">
                         <div className="p-4">
-                            <Avatar>
+                            {/* <Avatar>
                                 <AvatarImage
                                     src={session.user.image!}
                                     alt="avatar"
                                 />
                                 <AvatarFallback></AvatarFallback>
-                            </Avatar>
+                            </Avatar> */}
+                            <HydrationBoundary state={dehydrate(queryClient)}>
+                                <AvatarAside />
+                            </HydrationBoundary>
                         </div>
                         <Link
                             href="/main"
