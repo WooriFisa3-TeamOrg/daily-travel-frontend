@@ -297,7 +297,8 @@ const Profile: FC<ProfileProps> = ({}) => {
                                             <Avatar className="mr-2">
                                                 <AvatarImage
                                                     src={
-                                                        data?.data.authorProfile
+                                                        data?.data.recentPost
+                                                            .authorProfile
                                                     }
                                                     alt={
                                                         data?.data.recentPost
