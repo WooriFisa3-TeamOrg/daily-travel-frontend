@@ -282,10 +282,10 @@ const Profile: FC<ProfileProps> = ({}) => {
                                 <h2 className="text-lg md:text-xl font-semibold">
                                     Latest Post
                                 </h2>
-                                {queryLoaded && (
+                                {queryLoaded && data?.data.recentPost && (
                                     <div className="relative overflow-hidden rounded-lg group border border-muted">
                                         <Link
-                                            href={`/main/posts/${data?.data.recentPost.id}`}
+                                            href={`/main/posts/${data?.data.recentPost?.id}`}
                                             className="absolute inset-0 z-10"
                                             prefetch={false}
                                         >
@@ -297,8 +297,7 @@ const Profile: FC<ProfileProps> = ({}) => {
                                             <Avatar className="mr-2">
                                                 <AvatarImage
                                                     src={
-                                                        data?.data.recentPost
-                                                            .authorProfile
+                                                        data?.data.authorProfile
                                                     }
                                                     alt={
                                                         data?.data.recentPost

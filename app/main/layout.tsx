@@ -44,26 +44,15 @@ export default async function MainLayout({
     const queryClient = getQueryClient();
 
     void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
-    // void queryClient.prefetchQuery({
-    //     queryKey: ["likedPosts"],
-    //     queryFn: async () => {
-    //         const res = await axiosInstance.get(`/v1/likes?postId=${}`, {
-    //             headers: {
-    //                 Authorization: `Bearer ${session.user.id_token}`,
-    //             },
-    //         });
-
-    //         return res.data;
-    //     },
-    // });
 
     if (session) {
         console.log(session.user.id_token);
         let statusCode = 0;
         try {
+            console.log(process.env.HOST_NAME);
             //jwt validation
             const response = await fetch(
-                process.env.NEXT_PUBLIC_HOST_NAME + "/hello",
+                process.env.HOST_NAME + "/backend/hello",
                 {
                     headers: {
                         Authorization: `Bearer ${session.user.id_token}`,
