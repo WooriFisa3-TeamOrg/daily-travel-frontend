@@ -21,7 +21,7 @@ export default function PostDetailPage() {
         queryKey: ["post-detail", params.id],
         queryFn: async () => {
             const data = await fetch(
-                `http://localhost:3000/backend/v1/post/${params.id}`,
+                `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/post/${params.id}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -43,13 +43,16 @@ export default function PostDetailPage() {
     const { data: profile } = useQuery({
         queryKey: ["user-info"],
         queryFn: async () => {
-            const res = await fetch("http://localhost:3000/backend/v1/user", {
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${session?.user.id_token}`,
-                },
-                cache: "no-cache",
-            });
+            const res = await fetch(
+                process.env.NEXT_PUBLIC_HOST_NAME + "/backend/v1/user",
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session?.user.id_token}`,
+                    },
+                    cache: "no-cache",
+                }
+            );
 
             return res.json();
         },
@@ -58,14 +61,17 @@ export default function PostDetailPage() {
     console.log(profile);
 
     const writeCommentAction = async (postId: number, comment: string) => {
-        const res = await fetch(`http://localhost:3000/backend/v1/comments`, {
-            body: JSON.stringify({ id: postId, content: comment }),
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${session?.user.id_token}`,
-            },
-        });
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/comments`,
+            {
+                body: JSON.stringify({ id: postId, content: comment }),
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.user.id_token}`,
+                },
+            }
+        );
 
         setComment("");
 

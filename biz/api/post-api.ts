@@ -6,7 +6,7 @@ export const getPosts = async (
     count: number
 ) => {
     const res = await fetch(
-        `http://localhost:3000/backend/v1/post?page=${page}&count=${count}`,
+        `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/post?page=${page}&count=${count}`,
         {
             method: "GET",
             headers: {
@@ -26,7 +26,7 @@ export const getLikedPosts = async (
     count: number
 ) => {
     const res = await fetch(
-        `http://localhost:3000/backend/v1/likes?page=${page}&count=${count}`,
+        `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/likes?page=${page}&count=${count}`,
         {
             method: "GET",
             headers: {
@@ -41,14 +41,17 @@ export const getLikedPosts = async (
 };
 
 export const doLike = async (id_token: string, postId: number) => {
-    const res = await fetch(`http://localhost:3000/backend/v1/likes`, {
-        body: JSON.stringify({ postId }),
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${id_token}`,
-        },
-    });
+    const res = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/likes`,
+        {
+            body: JSON.stringify({ postId }),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${id_token}`,
+            },
+        }
+    );
 
     return res.status;
 };

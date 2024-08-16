@@ -63,7 +63,7 @@ export default async function MainLayout({
         try {
             //jwt validation
             const response = await fetch(
-                "http://localhost:3000/backend/hello",
+                process.env.NEXT_PUBLIC_HOST_NAME + "/hello",
                 {
                     headers: {
                         Authorization: `Bearer ${session.user.id_token}`,
