@@ -1,61 +1,34 @@
-"use client";
-
-import {
-    useInfiniteQuery,
-    useQuery,
-    useSuspenseQuery,
-} from "@tanstack/react-query";
-import { doLike, getPosts } from "../api/post-api";
-import { useSession } from "next-auth/react";
+'use client';
 import { useEffect, useRef, useState } from "react";
-import { decode } from "next-auth/jwt";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { doLike, getPosts } from "../api/post-api";
 import { Button } from "@/components/ui/button";
 import { HeartIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { timeAgo } from "@/biz/lib/time-util";
-import { axiosInstance } from "../lib/axios";
 import { getQueryClient } from "../providers/get-query-client";
+import { useInView } from 'react-intersection-observer';
 
 const PostList = () => {
     const { data: session } = useSession();
-    const [liked, setLiked] = useState(false);
-    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-        useInfiniteQuery({
-            queryKey: ["posts"],
-            queryFn: ({ pageParam = 0 }) =>
-                getPosts(session!.user.id_token!, pageParam, 20),
-            initialPageParam: 0,
-            getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
-        });
-
-    const observerRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        if (!observerRef.current || !hasNextPage) return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting) {
-                    fetchNextPage();
-                }
-            },
-            {
-                root: null,
-                rootMargin: "20px",
-                threshold: 1.0,
-            }
-        );
-
-        observer.observe(observerRef.current);
-
-        return () => {
-            if (observerRef.current) observer.unobserve(observerRef.current);
-        };
-    }, [fetchNextPage, hasNextPage]);
-
     const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
+
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        status,
+    } = useInfiniteQuery({
+        queryKey: ["posts"],
+        queryFn: ({ pageParam = 0 }) =>
+            getPosts(session!.user.id_token!, pageParam, 20),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => { console.log("next page",lastPage); return !lastPage.data.end ? lastPage.data.page+1 :undefined},
+    });
 
     const queryClient = getQueryClient();
 
@@ -65,10 +38,21 @@ const PostList = () => {
         queryClient.invalidateQueries();
     };
 
+    const { ref, inView } = useInView({
+        triggerOnce: false,  // 무한 스크롤을 위해 triggerOnce를 false로 설정
+        threshold: 1.0,
+    });
+
+    useEffect(() => {
+        console.log("use effect", inView, hasNextPage);
+        
+        if (inView && hasNextPage) {
+            fetchNextPage();
+        }
+    }, [inView, hasNextPage, fetchNextPage]);
+
     if (status === "pending") return <p>Loading...</p>;
     if (status === "error") return <p>Error loading posts.</p>;
-
-    console.log(data);
 
     return (
         <main className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:p-6">
@@ -97,15 +81,10 @@ const PostList = () => {
                             </Avatar>
                             <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                    <div className="font-small">
-                                        {post.author}
-                                    </div>
+                                    <div className="font-small">{post.author}</div>
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                        {/* <span>San Francisco</span> */}
                                         <Separator orientation="vertical" />
-                                        <time>
-                                            {timeAgo(post.creationDate)}
-                                        </time>
+                                        <time>{timeAgo(post.creationDate)}</time>
                                     </div>
                                 </div>
                             </div>
@@ -136,94 +115,25 @@ const PostList = () => {
                             <h3 className="text-lg font-semibold md:text-xl">
                                 {post.title}
                             </h3>
-                            {post.hashtags.map((tag: string, index: number) => {
-                                if (index < 3)
-                                    return (
-                                        <div
-                                            key={index}
-                                            className="w-fit bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground my-2"
-                                        >
-                                            #{tag}
-                                        </div>
-                                    );
-                            })}
+                            {post.hashtags.slice(0, 3).map((tag: string, index: number) => (
+                                <div
+                                    key={index}
+                                    className="w-fit bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground my-2"
+                                >
+                                    #{tag}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 ))
             )}
             <div
-                ref={observerRef}
+                ref={ref}
                 className="w-full h-10 flex justify-center items-center"
             >
                 {isFetchingNextPage && <p>Loading more...</p>}
             </div>
         </main>
-        // <main className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:p-6">
-
-        //     {testarr.map((item) => {
-        //         return (
-        //             <div
-        //                 key={item}
-        //                 className="relative overflow-hidden rounded-lg group border border-muted"
-        //             >
-        //                 <Link
-        //                     href={`/main/posts/${item}`}
-        //                     className="absolute inset-0 z-10"
-        //                     prefetch={false}
-        //                 >
-        //                     <span className="sr-only">View</span>
-        //                 </Link>
-        //                 <div className="flex items-center p-4 bg-background">
-        //                     <Avatar className="mr-2">
-        //                         <AvatarImage
-        //                             src="/placeholder-user.jpg"
-        //                             alt="@shadcn"
-        //                         />
-        //                         <AvatarFallback>JD</AvatarFallback>
-        //                     </Avatar>
-        //                     <div className="flex-1">
-        //                         <div className="flex items-center justify-between">
-        //                             <div className="font-medium">John Doe</div>
-        //                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-        //                                 <span>San Francisco</span>
-        //                                 <Separator orientation="vertical" />
-        //                                 <time>2 hours ago</time>
-        //                             </div>
-        //                         </div>
-        //                     </div>
-        //                     <Button
-        //                         variant="ghost"
-        //                         size="icon"
-        //                         onClick={() => setLiked(!liked)}
-        //                         className={`z-20`}
-        //                     >
-        //                         <HeartIcon className="w-4 h-4" />
-        //                         <span className="sr-only">Like</span>
-        //                     </Button>
-        //                 </div>
-        //                 <img
-        //                     src="/150x150.png"
-        //                     alt="Post 1"
-        //                     width={400}
-        //                     height={300}
-        //                     className="object-cover w-full h-60"
-        //                     style={{
-        //                         aspectRatio: "400/300",
-        //                         objectFit: "cover",
-        //                     }}
-        //                 />
-        //                 <div className="p-4 bg-background">
-        //                     <h3 className="text-lg font-semibold md:text-xl">
-        //                         Sunset Vibes
-        //                     </h3>
-        //                     <p className="text-sm text-muted-foreground">
-        //                         #photography #nature #sunset
-        //                     </p>
-        //                 </div>
-        //             </div>
-        //         );
-        //     })}
-        // </main>
     );
 };
 
