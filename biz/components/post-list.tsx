@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -10,25 +10,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { timeAgo } from "@/biz/lib/time-util";
 import { getQueryClient } from "../providers/get-query-client";
-import { useInView } from 'react-intersection-observer';
+import { useInView } from "react-intersection-observer";
 
 const PostList = () => {
     const { data: session } = useSession();
     const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
 
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        status,
-    } = useInfiniteQuery({
-        queryKey: ["posts"],
-        queryFn: ({ pageParam = 0 }) =>
-            getPosts(session!.user.id_token!, pageParam, 20),
-        initialPageParam: 0,
-        getNextPageParam: (lastPage) => { console.log("next page",lastPage); return !lastPage.data.end ? lastPage.data.page+1 :undefined},
-    });
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
+        useInfiniteQuery({
+            queryKey: ["posts"],
+            queryFn: ({ pageParam = 0 }) =>
+                getPosts(session!.user.id_token!, pageParam, 20),
+            initialPageParam: 0,
+            getNextPageParam: (lastPage) => {
+                return !lastPage.data.end ? lastPage.data.page + 1 : undefined;
+            },
+        });
 
     const queryClient = getQueryClient();
 
@@ -39,13 +36,13 @@ const PostList = () => {
     };
 
     const { ref, inView } = useInView({
-        triggerOnce: false,  // 무한 스크롤을 위해 triggerOnce를 false로 설정
+        triggerOnce: false, // 무한 스크롤을 위해 triggerOnce를 false로 설정
         threshold: 1.0,
     });
 
     useEffect(() => {
         console.log("use effect", inView, hasNextPage);
-        
+
         if (inView && hasNextPage) {
             fetchNextPage();
         }
@@ -81,10 +78,14 @@ const PostList = () => {
                             </Avatar>
                             <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                    <div className="font-small">{post.author}</div>
+                                    <div className="font-small">
+                                        {post.author}
+                                    </div>
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                         <Separator orientation="vertical" />
-                                        <time>{timeAgo(post.creationDate)}</time>
+                                        <time>
+                                            {timeAgo(post.creationDate)}
+                                        </time>
                                     </div>
                                 </div>
                             </div>
@@ -115,14 +116,16 @@ const PostList = () => {
                             <h3 className="text-lg font-semibold md:text-xl">
                                 {post.title}
                             </h3>
-                            {post.hashtags.slice(0, 3).map((tag: string, index: number) => (
-                                <div
-                                    key={index}
-                                    className="w-fit bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground my-2"
-                                >
-                                    #{tag}
-                                </div>
-                            ))}
+                            {post.hashtags
+                                .slice(0, 3)
+                                .map((tag: string, index: number) => (
+                                    <div
+                                        key={index}
+                                        className="w-fit bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground my-2"
+                                    >
+                                        #{tag}
+                                    </div>
+                                ))}
                         </div>
                     </div>
                 ))

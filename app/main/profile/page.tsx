@@ -16,20 +16,16 @@ export default async function ProfilePage() {
     if (!session) {
         redirect("/logout");
     }
-    // const userGetReponse: UserGetResponse = await getUserInfo(
-    //     session.user.id_token!
-    // );
-    // console.log(userGetReponse);
 
-    // const queryClient = getQueryClient();
+    const queryClient = getQueryClient();
 
-    // void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
+    void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
 
     return (
         <div className="flex justify-center">
-            {/* <HydrationBoundary state={dehydrate(queryClient)}> */}
-            <Profile />
-            {/* </HydrationBoundary> */}
+            <HydrationBoundary state={dehydrate(queryClient)}>
+                <Profile />
+            </HydrationBoundary>
         </div>
     );
 }
