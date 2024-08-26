@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { doLike, getPosts } from "../api/post-api";
+import { doLike, getSearchPosts } from "../api/post-api";
 import { Button } from "@/components/ui/button";
 import { HeartIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +12,12 @@ import { timeAgo } from "@/biz/lib/time-util";
 import { getQueryClient } from "../providers/get-query-client";
 import { useInView } from "react-intersection-observer";
 
-const PostList = () => {
+import { useSearchParams, useRouter } from "next/navigation";
+
+const SearchPostList = () => {
+    const searchParams = useSearchParams();
+    const { replace } = useRouter();
+
     const { data: session } = useSession();
     const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
 
@@ -23,9 +28,14 @@ const PostList = () => {
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
         useInfiniteQuery({
-            queryKey: ["posts"],
+            queryKey: ["search-posts", searchParams.get("search")!],
             queryFn: ({ pageParam = 0 }) =>
-                getPosts(session!.user.id_token!, pageParam, 20),
+                getSearchPosts(
+                    session!.user.id_token!,
+                    searchParams.get("search")!,
+                    pageParam,
+                    20
+                ),
             initialPageParam: 0,
             getNextPageParam: (lastPage) => {
                 return !lastPage.data.end ? lastPage.data.page + 1 : undefined;
@@ -41,8 +51,6 @@ const PostList = () => {
     };
 
     useEffect(() => {
-        console.log("use effect", inView, hasNextPage);
-
         if (inView && hasNextPage) {
             fetchNextPage();
         }
@@ -50,6 +58,13 @@ const PostList = () => {
 
     if (status === "pending") return <p>Loading...</p>;
     if (status === "error") return <p>Error loading posts.</p>;
+    if (
+        status === "success" &&
+        data.pages[0].data.postPreviewResponses.length === 0
+    )
+        return <p>No posts found.</p>;
+
+    console.log(data);
 
     return (
         <main className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:p-6">
@@ -144,4 +159,4 @@ const PostList = () => {
     );
 };
 
-export default PostList;
+export default SearchPostList;

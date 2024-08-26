@@ -20,6 +20,29 @@ export const getPosts = async (
     return res.json();
 };
 
+export const getSearchPosts = async (
+    id_token: string,
+    search: string,
+    page: number,
+    count: number
+) => {
+    console.log("getSearchPosts");
+    console.log(search);
+    const res = await fetch(
+        `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v2/post/search?search=${search}&page=${page}&count=${count}`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${id_token}`,
+            },
+            cache: "no-cache",
+        }
+    );
+
+    return res.json();
+};
+
 export const getLikedPosts = async (
     id_token: string,
     page: number,
