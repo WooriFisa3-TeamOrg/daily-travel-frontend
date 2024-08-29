@@ -17,7 +17,7 @@ export default function PostDetailPage() {
     const params = useParams();
     const { data: session } = useSession();
     const queryClient = getQueryClient();
-    const { data: post } = useQuery({
+    const { data: post, status } = useQuery({
         queryKey: ["post-detail", params.id],
         queryFn: async () => {
             const data = await fetch(
@@ -57,8 +57,6 @@ export default function PostDetailPage() {
             return res.json();
         },
     });
-    console.log(post);
-    console.log(profile);
 
     const writeCommentAction = async (postId: number, comment: string) => {
         const res = await fetch(
@@ -113,8 +111,12 @@ export default function PostDetailPage() {
         }
     };
 
-    if (!post) {
-        return <div>error...</div>;
+    if (status === "pending") {
+        return <div>Loading...</div>;
+    }
+
+    if (status === "error") {
+        return <div>Error</div>;
     }
 
     return (
