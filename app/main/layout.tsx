@@ -36,40 +36,20 @@ export default async function MainLayout({
     children: React.ReactNode;
 }>) {
     const session = await getServerSession(authOptions);
-
     if (!session) {
         redirect("/logout");
+    }
+
+    if (session && session.error) {
+        console.log(session.error);
+        if (session.error === "RefreshAccessTokenError") {
+            redirect("/logout");
+        }
     }
 
     const queryClient = getQueryClient();
 
     void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
-
-    if (session) {
-        console.log(session.user.id_token);
-        let statusCode = 0;
-        try {
-            console.log(process.env.HOST_NAME);
-            //jwt validation
-            const response = await fetch(
-                process.env.HOST_NAME + "/backend/hello",
-                {
-                    headers: {
-                        Authorization: `Bearer ${session.user.id_token}`,
-                    },
-                }
-            );
-            console.log(await response.text());
-            console.log(response.status);
-            statusCode = response.status;
-        } catch (e) {
-            console.log(e);
-        }
-
-        if (statusCode === 401) {
-            redirect("/logout");
-        }
-    }
 
     return (
         // <div className="flex">
