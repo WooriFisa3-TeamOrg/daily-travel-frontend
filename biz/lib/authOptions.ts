@@ -21,6 +21,7 @@ declare module "next-auth/jwt" {
 
 async function refreshAccessToken(token: JWT) {
     try {
+        console.log("Refreshing access token");
         const response = await fetch("https://oauth2.googleapis.com/token", {
             method: "POST",
             body: new URLSearchParams({
@@ -32,20 +33,26 @@ async function refreshAccessToken(token: JWT) {
         });
 
         const tokensOrError = await response.json();
+        console.log("tokensOrError", tokensOrError);
 
         if (!response.ok) throw tokensOrError;
 
         const newTokens = tokensOrError as {
+            id_token: string;
             access_token: string;
             expires_in: number;
             refresh_token?: string;
         };
 
+        token.id_token = newTokens.id_token;
         token.access_token = newTokens.access_token;
         token.expires_at = Math.floor(Date.now() / 1000 + newTokens.expires_in);
         // Some providers only issue refresh tokens once, so preserve if we did not get a new one
         if (newTokens.refresh_token)
             token.refresh_token = newTokens.refresh_token;
+
+        console.log("Access token refreshed", token);
+
         return token;
     } catch (error) {
         console.log(error);
@@ -80,15 +87,19 @@ export const authOptions: AuthOptions = {
                 token.provider = account.provider!;
                 token.refresh_token = account.refresh_token!;
 
-                token.accessTokenExpires =
-                    Date.now() + account.expires_at! * 1000;
+                token.accessTokenExpires = account.expires_at! * 1000;
+
+                console.log("JWT", token.id_token);
+                console.log("expires_at", account.expires_at! * 1000);
             }
 
+            console.log("date");
+            console.log(Date.now());
+            console.log(token.accessTokenExpires);
             if (Date.now() < token.accessTokenExpires) {
                 return token;
             }
 
-            // Access token has expired, try to update it
             return refreshAccessToken(token);
         },
         async session({ session, token }) {
@@ -97,6 +108,8 @@ export const authOptions: AuthOptions = {
                 id_token: token.id_token,
             };
             session.error = token.error;
+
+            console.log("id_token", token.id_token);
 
             return session;
         },

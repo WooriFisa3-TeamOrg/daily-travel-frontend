@@ -82,7 +82,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
     };
 
     return (
-        <Card className="w-full max-w-lg">
+        <Card className="w-full max-w-lg sm:max-w-5xl">
             <CardContent className="py-4">
                 <form
                     onSubmit={(e) => e.preventDefault()}

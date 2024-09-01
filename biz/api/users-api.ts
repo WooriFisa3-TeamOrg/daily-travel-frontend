@@ -36,18 +36,23 @@ export const getUserInfo = (id_token: string) => {
     return queryOptions({
         queryKey: ["user-info"],
         queryFn: async () => {
-            const res = await fetch(
-                process.env.NEXT_PUBLIC_HOST_NAME + "/backend/v1/user",
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${id_token}`,
-                    },
-                    cache: "no-cache",
-                }
-            );
-
-            return res.json();
+            try {
+                console.log("FETCHING USER INFO", id_token);
+                const res = await fetch(
+                    process.env.NEXT_PUBLIC_HOST_NAME + "/backend/v1/user",
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${id_token}`,
+                        },
+                        cache: "no-cache",
+                    }
+                );
+                return res.json();
+            } catch (error) {
+                console.error(error);
+                throw new Error("Failed to fetch user info");
+            }
         },
     });
 };
