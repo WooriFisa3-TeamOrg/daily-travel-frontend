@@ -1,10 +1,11 @@
 "use client";
 import { doLike } from "@/biz/api/post-api";
 import { getQueryClient } from "@/biz/providers/get-query-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
+
 import { useQuery } from "@tanstack/react-query";
 import { HeartIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -124,7 +125,7 @@ export default function PostDetailPage() {
         <div className="flex justify-center">
             <div className="bg-background rounded-lg border p-6 w-full max-w-2xl">
                 <div className="flex items-center gap-4 mb-4">
-                    <Avatar className="w-10 h-10 ">
+                    <Avatar>
                         {/* <AvatarImage
                             src={post.data.authorProfileImagePath}
                             alt="@shadcn"
@@ -136,7 +137,7 @@ export default function PostDetailPage() {
                         >
                             <Image
                                 src={post.data.authorProfileImagePath}
-                                alt="@shadcn"
+                                alt="avatar"
                                 width={40}
                                 height={40}
                             />
@@ -258,7 +259,7 @@ export default function PostDetailPage() {
                     {/* 댓글 입력창 */}
                     <div className="mt-8 space-y-4">
                         <div className="flex items-start gap-4">
-                            <Avatar className="w-10 h-10 border rounded-full">
+                            <Avatar>
                                 {/* <AvatarImage
                                     src={profile.data.profileImagePath}
                                     alt="@shadcn"
@@ -270,7 +271,7 @@ export default function PostDetailPage() {
                                 >
                                     <Image
                                         src={profile.data.profileImagePath}
-                                        alt="@shadcn"
+                                        alt="avatar"
                                         width={40}
                                         height={40}
                                     />
@@ -301,7 +302,10 @@ export default function PostDetailPage() {
                     {/* 댓글 */}
 
                     {post.data.comments.map((comment: any, index: number) => (
-                        <div className="flex items-start gap-4">
+                        <div
+                            className="flex items-start gap-4"
+                            key={"comments" + index}
+                        >
                             <div
                                 key={`comment_${index}`}
                                 className="flex items-start gap-4"
