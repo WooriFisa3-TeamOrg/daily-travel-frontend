@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { getQueryClient } from "../providers/get-query-client";
+import Link from "next/link";
 
 export default function AvatarAside() {
     const { data: session } = useSession();
@@ -21,9 +22,11 @@ export default function AvatarAside() {
     }, [data]);
 
     return (
-        <Avatar>
-            <AvatarImage src={picture} alt="avatar" />
-            <AvatarFallback></AvatarFallback>
-        </Avatar>
+        <Link href="/main/profile" prefetch={false}>
+            <Avatar>
+                <AvatarImage src={picture} alt="avatar" />
+                <AvatarFallback></AvatarFallback>
+            </Avatar>
+        </Link>
     );
 }
