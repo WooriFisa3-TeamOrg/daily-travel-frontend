@@ -28,7 +28,7 @@ export default function AvatarAside() {
                 <AvatarImage asChild src={picture}>
                     <Image src={picture} alt="avatar" width={40} height={40} />
                 </AvatarImage>
-                <AvatarFallback>aa</AvatarFallback>
+                <AvatarFallback></AvatarFallback>
             </Avatar>
         </Link>
     );

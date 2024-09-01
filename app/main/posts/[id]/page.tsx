@@ -3,6 +3,14 @@ import { doLike } from "@/biz/api/post-api";
 import { getQueryClient } from "@/biz/providers/get-query-client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
@@ -15,6 +23,9 @@ import { useState } from "react";
 
 export default function PostDetailPage() {
     const [like, setLike] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [loadingPreviewImg, setLoadingPreviewImg] = useState(true);
+
     const [comment, setComment] = useState("");
     const params = useParams();
     const { data: session } = useSession();
@@ -78,7 +89,6 @@ export default function PostDetailPage() {
         return res.status;
     };
 
-    // onclick button write comment
     const writeComment = async (e: React.MouseEvent<HTMLButtonElement>) => {
         if ((e as any).key === "Enter") {
             return;
@@ -121,16 +131,15 @@ export default function PostDetailPage() {
         return <div>Error</div>;
     }
 
+    if (!selectedImage && post.data.images.length > 0) {
+        setSelectedImage(post.data.images[0]);
+    }
+
     return (
         <div className="flex justify-center">
-            <div className="bg-background rounded-lg border p-6 w-full max-w-2xl">
+            <div className="bg-background rounded-lg border p-6 w-full max-w-lg sm:max-w-5xl">
                 <div className="flex items-center gap-4 mb-4">
                     <Avatar>
-                        {/* <AvatarImage
-                            src={post.data.authorProfileImagePath}
-                            alt="@shadcn"
-                            className="rounded-full"
-                        /> */}
                         <AvatarImage
                             asChild
                             src={post.data.authorProfileImagePath}
@@ -163,54 +172,47 @@ export default function PostDetailPage() {
                     </div>
                 </div>
                 <div className="mb-6">
-                    <img
-                        src={
-                            post.data.images.length > 0
-                                ? post.data.images[0]
-                                : "/150x150.png"
-                        }
+                    {loadingPreviewImg && (
+                        <Skeleton className=" rounded-xl w-full aspect-[16/9]" />
+                    )}
+                    <Image
+                        src={selectedImage || "/150x150.png"}
                         width={800}
                         height={450}
-                        alt="Yosemite National Park"
+                        alt="preview"
                         className="w-full rounded-lg object-cover aspect-[16/9]"
+                        priority={true}
+                        onLoadingComplete={() => setLoadingPreviewImg(false)}
                     />
                 </div>
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                    {post.data.images.map((image: string, index: number) => (
-                        <img
-                            key={`images_${index}`}
-                            src={image}
-                            width={300}
-                            height={200}
-                            alt="Yosemite National Park"
-                            className="w-full rounded-lg object-cover aspect-[3/2]"
-                        />
-                    ))}
+                <div className="space-y-1">
+                    <Carousel>
+                        <CarouselContent>
+                            {post.data.images.map(
+                                (image: string, index: number) => (
+                                    <CarouselItem
+                                        key={"image" + index}
+                                        className="relative basis-1/3"
+                                        onClick={() => setSelectedImage(image)}
+                                    >
+                                        <Image
+                                            key={`images_${index}`}
+                                            src={image}
+                                            width={300}
+                                            height={200}
+                                            alt="image"
+                                            className="w-full rounded-lg object-cover aspect-[3/2] cursor-pointer transition-opacity duration-300 hover:opacity-80"
+                                        />
+                                    </CarouselItem>
+                                )
+                            )}
+                        </CarouselContent>
+
+                        <CarouselPrevious />
+                        <CarouselNext />
+                    </Carousel>
                 </div>
-                {/* TODO : 이미지 목록 뿌리기 */}
-                {/* <div className="grid grid-cols-3 gap-4 mb-6">
-                    <img
-                        src="/150x150.png"
-                        width={300}
-                        height={200}
-                        alt="Yosemite National Park"
-                        className="w-full rounded-lg object-cover aspect-[3/2]"
-                    />
-                    <img
-                        src="/150x150.png"
-                        width={300}
-                        height={200}
-                        alt="Yosemite National Park"
-                        className="w-full rounded-lg object-cover aspect-[3/2]"
-                    />
-                    <img
-                        src="/150x150.png"
-                        width={300}
-                        height={200}
-                        alt="Yosemite National Park"
-                        className="w-full rounded-lg object-cover aspect-[3/2]"
-                    />
-                </div> */}
+
                 <div className="flex items-center gap-2 mb-4">
                     <Button
                         variant="ghost"
@@ -241,15 +243,6 @@ export default function PostDetailPage() {
                             </div>
                         )
                     )}
-                    {/* <div className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground">
-                        #yosemite
-                    </div>
-                    <div className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground">
-                        #nationalpark
-                    </div>
-                    <div className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground">
-                        #adventure
-                    </div> */}
                 </div>
                 <div className="prose prose-gray dark:prose-invert">
                     <p> {post.data.content}</p>
@@ -260,11 +253,6 @@ export default function PostDetailPage() {
                     <div className="mt-8 space-y-4">
                         <div className="flex items-start gap-4">
                             <Avatar>
-                                {/* <AvatarImage
-                                    src={profile.data.profileImagePath}
-                                    alt="@shadcn"
-                                    className="rounded-full"
-                                /> */}
                                 <AvatarImage
                                     asChild
                                     src={profile.data.profileImagePath}
@@ -311,11 +299,6 @@ export default function PostDetailPage() {
                                 className="flex items-start gap-4"
                             >
                                 <Avatar className="w-10 h-10 border rounded-full">
-                                    {/* <AvatarImage
-                                        src={comment.profileImagePath}
-                                        alt="@shadcn"
-                                        className="rounded-full"
-                                    /> */}
                                     <AvatarImage
                                         asChild
                                         src={comment.profileImagePath}

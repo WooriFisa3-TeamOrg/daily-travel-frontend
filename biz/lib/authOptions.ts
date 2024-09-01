@@ -51,7 +51,7 @@ async function refreshAccessToken(token: JWT) {
         if (newTokens.refresh_token)
             token.refresh_token = newTokens.refresh_token;
 
-        console.log("Access token refreshed", token);
+        console.log("Id token refreshed", token);
 
         return token;
     } catch (error) {
@@ -121,9 +121,6 @@ export const authOptions: AuthOptions = {
             // console.log("Sign in", profile);
             if (account) {
                 try {
-                    console.log("Fetching /hello with access token");
-                    console.log(account.id_token);
-
                     //sign in
                     // const response = await axiosInstance.post("/v1/user", {
                     //     headers: {

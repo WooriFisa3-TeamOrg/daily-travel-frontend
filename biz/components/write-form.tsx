@@ -4,12 +4,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FC, useState } from "react";
+import { FC, useRef, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { getQueryClient } from "../providers/get-query-client";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
+import { X } from "lucide-react";
 
 interface WriteFormProps {}
 
@@ -21,6 +29,59 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
     const [hashtags, setHashtags] = useState<string[]>([]);
     const { data: session } = useSession();
     const queryClient = getQueryClient();
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    const handleImageDelete = (index: number) => {
+        if (imageFiles) {
+            const updatedImages = Array.from(imageFiles).filter(
+                (_, imgIndex) => imgIndex !== index
+            );
+
+            const dataTransfer = new DataTransfer();
+            updatedImages.forEach((file) => dataTransfer.items.add(file));
+            setImageFiles(dataTransfer.files);
+        }
+    };
+
+    const handleImageUploadClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files) return;
+
+        const newFiles = Array.from(e.target.files);
+        if (imageFiles) {
+            const currentFiles = Array.from(imageFiles);
+            const totalFiles = currentFiles.length + newFiles.length;
+            if (totalFiles > 10) {
+                toast({
+                    variant: "destructive",
+                    title: "이미지 업로드 제한",
+                    description: "최대 10개의 이미지만 업로드할 수 있습니다.",
+                });
+                return;
+            }
+            const updatedFiles = [...currentFiles, ...newFiles];
+            const dataTransfer = new DataTransfer();
+            updatedFiles.forEach((file) => dataTransfer.items.add(file));
+            setImageFiles(dataTransfer.files);
+        } else {
+            if (newFiles.length > 10) {
+                toast({
+                    variant: "destructive",
+                    title: "이미지 업로드 제한",
+                    description: "최대 10개의 이미지만 업로드할 수 있습니다.",
+                });
+                return;
+            }
+            const dataTransfer = new DataTransfer();
+            newFiles.forEach((file) => dataTransfer.items.add(file));
+            setImageFiles(dataTransfer.files);
+        }
+    };
 
     const handleHashtagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
@@ -118,13 +179,61 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                     </div>
                     <div className="py-2">
                         <Label htmlFor="image">사진 업로드</Label>
-                        <Input
-                            type="file"
-                            multiple
-                            accept="image/png, image/jpeg, image/jpg"
-                            onChange={(e) => setImageFiles(e.target.files)}
-                        />
+                        <div className="flex items-center gap-2">
+                            <Button
+                                type="button"
+                                onClick={handleImageUploadClick}
+                            >
+                                이미지 선택
+                            </Button>
+                            <span>{imageFiles ? imageFiles.length : 0}/10</span>
+                            <Input
+                                type="file"
+                                multiple
+                                accept="image/png, image/jpeg, image/jpg"
+                                onChange={handleFileChange}
+                                ref={fileInputRef}
+                                className="hidden"
+                            />
+                        </div>
                     </div>
+                    {imageFiles && (
+                        <div className="space-y-1">
+                            <Carousel>
+                                <CarouselContent>
+                                    {Array.from(imageFiles).map(
+                                        (image, imgIndex) => (
+                                            <CarouselItem
+                                                key={imgIndex}
+                                                className="relative basis-1/3"
+                                            >
+                                                <img
+                                                    src={URL.createObjectURL(
+                                                        image
+                                                    )}
+                                                    alt="image"
+                                                    className="w-full h-48 object-cover rounded-lg"
+                                                ></img>
+                                                <Button
+                                                    className="absolute top-2 right-2 bg-red-500 text-white"
+                                                    onClick={() =>
+                                                        handleImageDelete(
+                                                            imgIndex
+                                                        )
+                                                    }
+                                                >
+                                                    <X />
+                                                </Button>
+                                            </CarouselItem>
+                                        )
+                                    )}
+                                </CarouselContent>
+
+                                <CarouselPrevious />
+                                <CarouselNext />
+                            </Carousel>
+                        </div>
+                    )}
                     <div className="py-2">
                         <Label htmlFor="hashtag">해시태그</Label>
                         <Input
