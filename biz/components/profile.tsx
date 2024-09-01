@@ -13,6 +13,7 @@ import { getQueryClient } from "../providers/get-query-client";
 import { axiosInstance } from "../lib/axios";
 import { timeAgo } from "../lib/time-util";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 interface ProfileProps {}
 
@@ -107,7 +108,14 @@ const Profile: FC<ProfileProps> = ({}) => {
                         <div className="absolute inset-0  flex items-center justify-center">
                             <div className="relative">
                                 <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-background">
-                                    <AvatarImage src={picture} alt="@shadcn" />
+                                    <AvatarImage asChild src={picture}>
+                                        <Image
+                                            src={picture}
+                                            alt="avatar"
+                                            width={120}
+                                            height={120}
+                                        />
+                                    </AvatarImage>
                                     <AvatarFallback>
                                         {/* {session?.user.name} */}
                                     </AvatarFallback>
@@ -217,8 +225,17 @@ const Profile: FC<ProfileProps> = ({}) => {
                                                 <Avatar className="mr-2">
                                                     <AvatarImage
                                                         src={post.authorProfile}
-                                                        alt={post.author}
-                                                    />
+                                                        asChild
+                                                    >
+                                                        <Image
+                                                            src={
+                                                                post.authorProfile
+                                                            }
+                                                            alt={post.author}
+                                                            width={40}
+                                                            height={40}
+                                                        />
+                                                    </AvatarImage>
                                                     <AvatarFallback>
                                                         {post.author.charAt(0)}
                                                     </AvatarFallback>
@@ -300,11 +317,23 @@ const Profile: FC<ProfileProps> = ({}) => {
                                                         data?.data.recentPost
                                                             .authorProfile
                                                     }
-                                                    alt={
-                                                        data?.data.recentPost
-                                                            .author
-                                                    }
-                                                />
+                                                    asChild
+                                                >
+                                                    <Image
+                                                        src={
+                                                            data?.data
+                                                                .recentPost
+                                                                .authorProfile
+                                                        }
+                                                        alt={
+                                                            data?.data
+                                                                .recentPost
+                                                                .author
+                                                        }
+                                                        width={40}
+                                                        height={40}
+                                                    />
+                                                </AvatarImage>
                                                 <AvatarFallback>
                                                     {data?.data.recentPost.author.charAt(
                                                         0

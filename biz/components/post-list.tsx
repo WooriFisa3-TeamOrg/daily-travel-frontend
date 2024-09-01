@@ -73,7 +73,7 @@ const PostList = () => {
                                     src={post.authorProfile}
                                     alt={post.author}
                                 /> */}
-                                <AvatarImage asChild>
+                                <AvatarImage asChild src={post.authorProfile}>
                                     <Image
                                         src={post.authorProfile}
                                         alt={post.author}
@@ -110,20 +110,21 @@ const PostList = () => {
                                 <span className="sr-only">Like</span>
                             </Button>
                         </div>
-                        <img
+                        <Image
                             src={
                                 post.imageFiles[0]?.includes("placekitten")
                                     ? "https://picsum.photos/663/488"
                                     : post.imageFiles[0]
                             }
                             alt={post.title}
-                            width={400}
-                            height={300}
+                            width={302}
+                            height={240}
                             className="object-cover w-full h-60"
                             style={{
                                 aspectRatio: "400/300",
                                 objectFit: "cover",
                             }}
+                            priority={true}
                         />
                         <div className="p-4 bg-background">
                             <h3 className="text-lg font-semibold md:text-xl">

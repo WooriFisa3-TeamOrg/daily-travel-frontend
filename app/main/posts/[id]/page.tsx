@@ -130,7 +130,10 @@ export default function PostDetailPage() {
                             alt="@shadcn"
                             className="rounded-full"
                         /> */}
-                        <AvatarImage asChild>
+                        <AvatarImage
+                            asChild
+                            src={post.data.authorProfileImagePath}
+                        >
                             <Image
                                 src={post.data.authorProfileImagePath}
                                 alt="@shadcn"
@@ -261,7 +264,10 @@ export default function PostDetailPage() {
                                     alt="@shadcn"
                                     className="rounded-full"
                                 /> */}
-                                <AvatarImage asChild>
+                                <AvatarImage
+                                    asChild
+                                    src={profile.data.profileImagePath}
+                                >
                                     <Image
                                         src={profile.data.profileImagePath}
                                         alt="@shadcn"
@@ -306,7 +312,10 @@ export default function PostDetailPage() {
                                         alt="@shadcn"
                                         className="rounded-full"
                                     /> */}
-                                    <AvatarImage asChild>
+                                    <AvatarImage
+                                        asChild
+                                        src={comment.profileImagePath}
+                                    >
                                         <Image
                                             src={comment.profileImagePath}
                                             alt="@shadcn"

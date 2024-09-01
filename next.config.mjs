@@ -14,10 +14,17 @@ const nextConfig = {
     },
     reactStrictMode: true,
     images: {
+        minimumCacheTTL: 60,
         remotePatterns: [
             {
                 protocol: "https",
                 hostname: "*.googleusercontent.com",
+                port: "",
+                pathname: "**",
+            },
+            {
+                protocol: "https",
+                hostname: "s3.ap-northeast-2.amazonaws.com",
                 port: "",
                 pathname: "**",
             },
