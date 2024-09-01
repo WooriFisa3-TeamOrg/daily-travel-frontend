@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
 import { useQuery } from "@tanstack/react-query";
 import { HeartIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -124,12 +125,21 @@ export default function PostDetailPage() {
             <div className="bg-background rounded-lg border p-6 w-full max-w-2xl">
                 <div className="flex items-center gap-4 mb-4">
                     <Avatar className="w-10 h-10 ">
-                        <AvatarImage
+                        {/* <AvatarImage
                             src={post.data.authorProfileImagePath}
                             alt="@shadcn"
                             className="rounded-full"
-                        />
-                        <AvatarFallback>CN</AvatarFallback>
+                        /> */}
+                        <AvatarImage asChild>
+                            <Image
+                                src={post.data.authorProfileImagePath}
+                                alt="@shadcn"
+                                width={40}
+                                height={40}
+                            />
+                        </AvatarImage>
+
+                        <AvatarFallback></AvatarFallback>
                     </Avatar>
                     <div>
                         <div className="font-medium">{post.data.author}</div>
@@ -246,12 +256,20 @@ export default function PostDetailPage() {
                     <div className="mt-8 space-y-4">
                         <div className="flex items-start gap-4">
                             <Avatar className="w-10 h-10 border rounded-full">
-                                <AvatarImage
+                                {/* <AvatarImage
                                     src={profile.data.profileImagePath}
                                     alt="@shadcn"
                                     className="rounded-full"
-                                />
-                                <AvatarFallback>YO</AvatarFallback>
+                                /> */}
+                                <AvatarImage asChild>
+                                    <Image
+                                        src={profile.data.profileImagePath}
+                                        alt="@shadcn"
+                                        width={40}
+                                        height={40}
+                                    />
+                                </AvatarImage>
+                                <AvatarFallback></AvatarFallback>
                             </Avatar>
                             <div className="grid gap-2 flex-1">
                                 <div className="flex items-center gap-2">
@@ -283,11 +301,19 @@ export default function PostDetailPage() {
                                 className="flex items-start gap-4"
                             >
                                 <Avatar className="w-10 h-10 border rounded-full">
-                                    <AvatarImage
+                                    {/* <AvatarImage
                                         src={comment.profileImagePath}
                                         alt="@shadcn"
                                         className="rounded-full"
-                                    />
+                                    /> */}
+                                    <AvatarImage asChild>
+                                        <Image
+                                            src={comment.profileImagePath}
+                                            alt="@shadcn"
+                                            width={40}
+                                            height={40}
+                                        />
+                                    </AvatarImage>
                                     <AvatarFallback>JD</AvatarFallback>
                                 </Avatar>
                                 <div className="grid gap-2">

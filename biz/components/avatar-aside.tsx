@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import { getQueryClient } from "../providers/get-query-client";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AvatarAside() {
     const { data: session } = useSession();
@@ -24,7 +25,9 @@ export default function AvatarAside() {
     return (
         <Link href="/main/profile" prefetch={false}>
             <Avatar>
-                <AvatarImage src={picture} alt="avatar" />
+                <AvatarImage asChild>
+                    <Image src={picture} alt="avatar" width={40} height={40} />
+                </AvatarImage>
                 <AvatarFallback></AvatarFallback>
             </Avatar>
         </Link>

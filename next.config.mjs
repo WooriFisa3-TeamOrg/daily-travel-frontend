@@ -13,6 +13,16 @@ const nextConfig = {
         AXIOS_BASE_URL: process.env.AXIOS_BASE_URL,
     },
     reactStrictMode: true,
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "*.googleusercontent.com",
+                port: "",
+                pathname: "**",
+            },
+        ],
+    },
 };
 
 export default nextConfig;

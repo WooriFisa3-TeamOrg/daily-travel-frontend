@@ -11,6 +11,7 @@ import Link from "next/link";
 import { timeAgo } from "@/biz/lib/time-util";
 import { getQueryClient } from "../providers/get-query-client";
 import { useInView } from "react-intersection-observer";
+import Image from "next/image";
 
 const PostList = () => {
     const { data: session } = useSession();
@@ -68,10 +69,18 @@ const PostList = () => {
                         </Link>
                         <div className="flex items-center p-4 bg-background">
                             <Avatar className="mr-2">
-                                <AvatarImage
+                                {/* <AvatarImage
                                     src={post.authorProfile}
                                     alt={post.author}
-                                />
+                                /> */}
+                                <AvatarImage asChild>
+                                    <Image
+                                        src={post.authorProfile}
+                                        alt={post.author}
+                                        width={40}
+                                        height={40}
+                                    />
+                                </AvatarImage>
                                 <AvatarFallback>
                                     {post.author.charAt(0)}
                                 </AvatarFallback>
