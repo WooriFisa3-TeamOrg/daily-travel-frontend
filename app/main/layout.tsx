@@ -55,7 +55,7 @@ export default async function MainLayout({
         // <div className="flex">
         <div className="flex min-h-screen w-full">
             <div>
-                <div className="hidden flex-col border-r bg-background pl-20 pt-20 pr-10 h-full sm:flex">
+                <div className="hidden flex-col border-r bg-background pl-20 pt-20 pr-10 h-full md:flex">
                     <div className="flex flex-col items-start gap-4">
                         <div className="p-4">
                             {/* <Avatar>
@@ -106,7 +106,7 @@ export default async function MainLayout({
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col sm:hidden ">
+                <div className="flex flex-col md:hidden ">
                     <header className="sticky top-0 z-10 flex h-14 items-center justify-between bg-background px-4 ">
                         <Sheet>
                             <SheetTrigger asChild>
@@ -117,15 +117,15 @@ export default async function MainLayout({
                             </SheetTrigger>
                             <SheetContent side="left" className="sm:max-w-xs">
                                 <div className="flex flex-col items-start gap-4 p-4">
-                                    <div className="p-7">
-                                        <Avatar>
-                                            <AvatarImage
-                                                src={session.user.image!}
-                                                alt="avatar"
-                                            />
-                                            <AvatarFallback></AvatarFallback>
-                                        </Avatar>
-                                    </div>
+                                    <SheetClose asChild>
+                                        <div className="p-7">
+                                            <HydrationBoundary
+                                                state={dehydrate(queryClient)}
+                                            >
+                                                <AvatarAside />
+                                            </HydrationBoundary>
+                                        </div>
+                                    </SheetClose>
                                     <SheetClose asChild>
                                         <Link
                                             href="/main"
