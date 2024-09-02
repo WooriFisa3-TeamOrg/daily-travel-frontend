@@ -73,7 +73,7 @@ const PostList = () => {
                                     src={post.authorProfile}
                                     alt={post.author}
                                 /> */}
-                                <AvatarImage asChild src={post.authorProfile}>
+                                <AvatarImage asChild src={"/next.svg"}>
                                     <Image
                                         src={post.authorProfile}
                                         alt={post.author}
@@ -111,11 +111,7 @@ const PostList = () => {
                             </Button>
                         </div>
                         <Image
-                            src={
-                                post.imageFiles[0]?.includes("placekitten")
-                                    ? "https://picsum.photos/663/488"
-                                    : post.imageFiles[0]
-                            }
+                            src={post.imageFiles[0]}
                             alt={post.title}
                             width={302}
                             height={240}

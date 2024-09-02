@@ -117,11 +117,7 @@ const SearchPostList = () => {
                             </Button>
                         </div>
                         <img
-                            src={
-                                post.imageFiles[0]?.includes("placekitten")
-                                    ? "https://picsum.photos/663/488"
-                                    : post.imageFiles[0]
-                            }
+                            src={post.imageFiles[0]}
                             alt={post.title}
                             width={400}
                             height={300}

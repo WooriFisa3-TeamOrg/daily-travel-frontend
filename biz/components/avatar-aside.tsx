@@ -15,9 +15,10 @@ export default function AvatarAside() {
     const { data } = useQuery(getUserInfo(session?.user.id_token!));
     const [picture, setPicture] = useState("");
     useEffect(() => {
-        if (data) {
+        if (data && data.data) {
             console.log("PROFILE DATA");
             console.log(data);
+            console.log(data.data.profileImagePath);
             setPicture(data.data.profileImagePath);
         }
     }, [data, picture]);
@@ -25,7 +26,7 @@ export default function AvatarAside() {
     return (
         <Link href="/main/profile" prefetch={false}>
             <Avatar>
-                <AvatarImage asChild src={picture}>
+                <AvatarImage asChild src="/next.svg">
                     <Image src={picture} alt="avatar" width={40} height={40} />
                 </AvatarImage>
                 <AvatarFallback></AvatarFallback>

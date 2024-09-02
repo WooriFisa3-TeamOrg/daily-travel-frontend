@@ -108,7 +108,7 @@ const Profile: FC<ProfileProps> = ({}) => {
                         <div className="absolute inset-0  flex items-center justify-center">
                             <div className="relative">
                                 <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-background">
-                                    <AvatarImage asChild src={picture}>
+                                    <AvatarImage asChild src={"/next.svg"}>
                                         <Image
                                             src={picture}
                                             alt="avatar"
