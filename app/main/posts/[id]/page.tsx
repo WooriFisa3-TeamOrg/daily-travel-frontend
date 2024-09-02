@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { HeartIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
@@ -172,9 +173,9 @@ export default function PostDetailPage() {
                     </div>
                 </div>
                 <div className="mb-6">
-                    {loadingPreviewImg && (
+                    {/* {loadingPreviewImg && (
                         <Skeleton className=" rounded-xl w-full aspect-[16/9]" />
-                    )}
+                    )} */}
                     <Image
                         src={selectedImage || "/150x150.png"}
                         width={800}
@@ -182,7 +183,7 @@ export default function PostDetailPage() {
                         alt="preview"
                         className="w-full rounded-lg object-cover aspect-[16/9]"
                         priority={true}
-                        onLoadingComplete={() => setLoadingPreviewImg(false)}
+                        onLoad={() => setLoadingPreviewImg(false)}
                     />
                 </div>
                 <div className="space-y-1">
@@ -247,7 +248,24 @@ export default function PostDetailPage() {
                 <div className="prose prose-gray dark:prose-invert">
                     <p> {post.data.content}</p>
                 </div>
-                <div className="mt-8 space-y-4">
+
+                {post.data.mine && (
+                    <div className="flex justify-end py-10 gap-5">
+                        <Link href={`/main/modify/${post.data.id}`}>
+                            <Button>수정</Button>
+                        </Link>
+                        <Button
+                            className="bg-red-500 text-white"
+                            onClick={() => {
+                                alert("delet");
+                            }}
+                        >
+                            삭제
+                        </Button>
+                    </div>
+                )}
+
+                <div className="space-y-4">
                     <h3 className="text-xl font-bold">Comments</h3>
                     {/* 댓글 입력창 */}
                     <div className="mt-8 space-y-4">
@@ -305,12 +323,12 @@ export default function PostDetailPage() {
                                     >
                                         <Image
                                             src={comment.profileImagePath}
-                                            alt="@shadcn"
+                                            alt="avatar"
                                             width={40}
                                             height={40}
                                         />
                                     </AvatarImage>
-                                    <AvatarFallback>JD</AvatarFallback>
+                                    <AvatarFallback></AvatarFallback>
                                 </Avatar>
                                 <div className="grid gap-2">
                                     <div className="flex items-center gap-2">
