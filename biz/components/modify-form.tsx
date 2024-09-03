@@ -28,7 +28,7 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [placeName, setPlaceName] = useState("");
-    const [imageFiles, setImageFiles] = useState<FileList | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[] | null>(null);
     const [hashtags, setHashtags] = useState<string[]>([]);
     const params = useParams();
     const { data: session } = useSession();
@@ -55,13 +55,10 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
 
     const handleImageDelete = (index: number) => {
         if (imageFiles) {
-            const updatedImages = Array.from(imageFiles).filter(
+            const updatedImages = imageFiles.filter(
                 (_, imgIndex) => imgIndex !== index
             );
-
-            const dataTransfer = new DataTransfer();
-            updatedImages.forEach((file) => dataTransfer.items.add(file));
-            setImageFiles(dataTransfer.files);
+            setImageFiles(updatedImages);
         }
     };
 
@@ -87,9 +84,7 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
                 return;
             }
             const updatedFiles = [...currentFiles, ...newFiles];
-            const dataTransfer = new DataTransfer();
-            updatedFiles.forEach((file) => dataTransfer.items.add(file));
-            setImageFiles(dataTransfer.files);
+            setImageFiles(updatedFiles);
         } else {
             if (newFiles.length > 10) {
                 toast({
@@ -99,9 +94,7 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
                 });
                 return;
             }
-            const dataTransfer = new DataTransfer();
-            newFiles.forEach((file) => dataTransfer.items.add(file));
-            setImageFiles(dataTransfer.files);
+            setImageFiles([...newFiles]);
         }
     };
 
@@ -122,6 +115,7 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
         e.preventDefault();
 
         const formData = new FormData();
+        formData.append("id", post.data.id);
         formData.append("title", title);
         formData.append("content", content);
         formData.append("placeName", placeName);
@@ -135,16 +129,16 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
         });
 
         try {
-            const response = await axiosInstance.post("/v1/post", formData, {
+            const response = await axiosInstance.put("/v1/post", formData, {
                 headers: {
                     Authorization: `Bearer ${session?.user.id_token}`,
                     "Content-Type": "multipart/form-data",
                 },
             });
 
-            console.log("Post submitted successfully!");
+            console.log("Post modified successfully!");
             toast({
-                title: "게시글 작성 완료",
+                title: "게시글 수정 완료",
                 description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
             });
             queryClient.invalidateQueries();
@@ -164,41 +158,40 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
         }
     };
 
+    const handleImageLoading = async () => {
+        const imagePromises = post.data.images.map((image: string) => {
+            console.log("Image loading...", image);
+            return fetch(
+                `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/post/image?s3url=${image}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${session?.user.id_token}`,
+                    },
+                    cache: "no-cache",
+                }
+            );
+        });
+        const responses = await Promise.all(imagePromises);
+        console.log("Image loaded successfully!", imagePromises);
+
+        const blobPromises = responses.map((response) => response.blob());
+        const blobs = await Promise.all(blobPromises);
+        console.log("Blob loaded successfully!", blobs);
+
+        //set imageFiles
+        const files = blobs.map((blob) => {
+            return new File([blob], "image.jpg", { type: "image/jpeg" });
+        });
+        setImageFiles(files);
+    };
+
     useEffect(() => {
         if (post && post.data.mine) {
             setTitle(post.data.title);
             setContent(post.data.content);
             setPlaceName(post.data.placeName);
             setHashtags(post.data.hashtags);
-
-            // const images = post.data.images as string[];
-            //  images.forEach(async (image) => {
-            //     const res = await fetch(
-            //         `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/post/image/${image}`,
-            //         {
-            //             headers: {
-            //                 "Content-Type": "application/json",
-            //                 Authorization: `Bearer ${session?.user.id_token}`,
-            //             },
-            //             cache: "no-cache",
-            //         }
-            //     );
-            //     const blob = await res.blob();
-            //     const file = new File([blob], image, { type: blob.type });
-            //     setImageFiles((prev) => {
-            //         if (prev) {
-            //             const dataTransfer = new DataTransfer();
-            //             Array.from(prev).forEach((file) =>
-            //                 dataTransfer.items.add(file)
-            //             );
-            //             dataTransfer.items.add(file);
-            //             return dataTransfer.files;
-            //         } else {
-            //             return new FileList([file], image);
-            //         }
-            //     });
-
-            // });
+            handleImageLoading();
         }
     }, [post]);
 

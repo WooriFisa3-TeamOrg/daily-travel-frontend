@@ -257,7 +257,7 @@ export default function PostDetailPage() {
                         <Button
                             className="bg-red-500 text-white"
                             onClick={() => {
-                                alert("delet");
+                                alert("delete");
                             }}
                         >
                             삭제

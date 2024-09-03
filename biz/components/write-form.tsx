@@ -25,7 +25,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [placeName, setPlaceName] = useState("");
-    const [imageFiles, setImageFiles] = useState<FileList | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[] | null>(null);
     const [hashtags, setHashtags] = useState<string[]>([]);
     const { data: session } = useSession();
     const queryClient = getQueryClient();
@@ -33,13 +33,10 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
 
     const handleImageDelete = (index: number) => {
         if (imageFiles) {
-            const updatedImages = Array.from(imageFiles).filter(
+            const updatedImages = imageFiles.filter(
                 (_, imgIndex) => imgIndex !== index
             );
-
-            const dataTransfer = new DataTransfer();
-            updatedImages.forEach((file) => dataTransfer.items.add(file));
-            setImageFiles(dataTransfer.files);
+            setImageFiles(updatedImages);
         }
     };
 
@@ -65,9 +62,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                 return;
             }
             const updatedFiles = [...currentFiles, ...newFiles];
-            const dataTransfer = new DataTransfer();
-            updatedFiles.forEach((file) => dataTransfer.items.add(file));
-            setImageFiles(dataTransfer.files);
+            setImageFiles(updatedFiles);
         } else {
             if (newFiles.length > 10) {
                 toast({
@@ -77,9 +72,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                 });
                 return;
             }
-            const dataTransfer = new DataTransfer();
-            newFiles.forEach((file) => dataTransfer.items.add(file));
-            setImageFiles(dataTransfer.files);
+            setImageFiles([...newFiles]);
         }
     };
 
