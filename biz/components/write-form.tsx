@@ -239,8 +239,15 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                             <Label>Hashtag List:</Label>
                             {hashtags.map((hashtag, index) => (
                                 <div
-                                    key={index}
-                                    className="flex items-center gap-2"
+                                    key={`hashtag_${index}`}
+                                    className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground w-fit cursor-pointer"
+                                    onClick={() =>
+                                        setHashtags(
+                                            hashtags.filter(
+                                                (_, idx) => idx !== index
+                                            )
+                                        )
+                                    }
                                 >
                                     <span>#{hashtag}</span>
                                 </div>

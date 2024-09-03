@@ -177,7 +177,7 @@ export default function PostDetailPage() {
                         <Skeleton className=" rounded-xl w-full aspect-[16/9]" />
                     )} */}
                     <Image
-                        src={selectedImage || "/150x150.png"}
+                        src={selectedImage || "/placeholder_introduce.webp"}
                         width={800}
                         height={450}
                         alt="preview"
