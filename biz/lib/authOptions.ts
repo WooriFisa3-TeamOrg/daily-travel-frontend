@@ -46,7 +46,8 @@ async function refreshAccessToken(token: JWT) {
 
         token.id_token = newTokens.id_token;
         token.access_token = newTokens.access_token;
-        token.expires_at = Math.floor(Date.now() / 1000 + newTokens.expires_in);
+        token.accessTokenExpires = Date.now() + newTokens.expires_in * 1000;
+
         // Some providers only issue refresh tokens once, so preserve if we did not get a new one
         if (newTokens.refresh_token)
             token.refresh_token = newTokens.refresh_token;

@@ -37,7 +37,6 @@ export const getUserInfo = (id_token: string) => {
         queryKey: ["user-info"],
         queryFn: async () => {
             try {
-                console.log("FETCHING USER INFO", id_token);
                 const res = await fetch(
                     process.env.NEXT_PUBLIC_HOST_NAME + "/backend/v1/user",
                     {

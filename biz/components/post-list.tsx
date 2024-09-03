@@ -111,7 +111,10 @@ const PostList = () => {
                             </Button>
                         </div>
                         <Image
-                            src={post.imageFiles[0]}
+                            src={
+                                post.imageFiles[0] ??
+                                "/placeholder_introduce.webp"
+                            }
                             alt={post.title}
                             width={302}
                             height={240}

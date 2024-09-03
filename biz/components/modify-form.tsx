@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { axiosInstance } from "../lib/axios";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/use-toast";
@@ -18,17 +18,39 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import { X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import Image from "next/image";
 
-interface WriteFormProps {}
+interface ModifyFormProps {}
 
-const WriteForm: FC<WriteFormProps> = ({}) => {
+const ModifyForm: FC<ModifyFormProps> = ({}) => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [placeName, setPlaceName] = useState("");
     const [imageFiles, setImageFiles] = useState<File[] | null>(null);
     const [hashtags, setHashtags] = useState<string[]>([]);
+    const params = useParams();
     const { data: session } = useSession();
     const queryClient = getQueryClient();
+
+    const { data: post, status } = useQuery({
+        queryKey: ["post-detail", params.id],
+        queryFn: async () => {
+            const data = await fetch(
+                `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/post/${params.id}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session?.user.id_token}`,
+                    },
+                    cache: "no-cache",
+                }
+            );
+            return data.json();
+        },
+    });
+
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const handleImageDelete = (index: number) => {
@@ -93,6 +115,7 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
         e.preventDefault();
 
         const formData = new FormData();
+        formData.append("id", post.data.id);
         formData.append("title", title);
         formData.append("content", content);
         formData.append("placeName", placeName);
@@ -106,16 +129,16 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
         });
 
         try {
-            const response = await axiosInstance.post("/v1/post", formData, {
+            const response = await axiosInstance.put("/v1/post", formData, {
                 headers: {
                     Authorization: `Bearer ${session?.user.id_token}`,
                     "Content-Type": "multipart/form-data",
                 },
             });
 
-            console.log("Post submitted successfully!");
+            console.log("Post modified successfully!");
             toast({
-                title: "게시글 작성 완료",
+                title: "게시글 수정 완료",
                 description: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
             });
             queryClient.invalidateQueries();
@@ -134,6 +157,58 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
             e.preventDefault(); // 엔터키 입력을 방지
         }
     };
+
+    const handleImageLoading = async () => {
+        const imagePromises = post.data.images.map((image: string) => {
+            console.log("Image loading...", image);
+            return fetch(
+                `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/post/image?s3url=${image}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${session?.user.id_token}`,
+                    },
+                    cache: "no-cache",
+                }
+            );
+        });
+        const responses = await Promise.all(imagePromises);
+        console.log("Image loaded successfully!", imagePromises);
+
+        const blobPromises = responses.map((response) => response.blob());
+        const blobs = await Promise.all(blobPromises);
+        console.log("Blob loaded successfully!", blobs);
+
+        //set imageFiles
+        const files = blobs.map((blob) => {
+            return new File([blob], "image.jpg", { type: "image/jpeg" });
+        });
+        setImageFiles(files);
+    };
+
+    useEffect(() => {
+        if (post && post.data.mine) {
+            setTitle(post.data.title);
+            setContent(post.data.content);
+            setPlaceName(post.data.placeName);
+            setHashtags(post.data.hashtags);
+            handleImageLoading();
+        }
+    }, [post]);
+
+    if (status === "success") {
+        if (post && !post.data.mine) {
+            return (
+                <Card className="w-full max-w-lg sm:max-w-5xl">
+                    <CardContent className="py-4">
+                        <div className="text-center">
+                            <h1 className="text-2xl font-bold">권한 없음</h1>
+                            <p>본인 게시글만 수정할 수 있습니다.</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            );
+        }
+    }
 
     return (
         <Card className="w-full max-w-lg sm:max-w-5xl">
@@ -265,4 +340,4 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
     );
 };
 
-export default WriteForm;
+export default ModifyForm;
