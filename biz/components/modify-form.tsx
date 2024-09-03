@@ -171,15 +171,34 @@ const ModifyForm: FC<ModifyFormProps> = ({}) => {
             setPlaceName(post.data.placeName);
             setHashtags(post.data.hashtags);
 
-            // const images = post.data.images;
-            // const imageFiles = images.map((image: string) => {
-            //     return fetch(
-            //         `${
-            //             process.env.NEXT_PUBLIC_HOST_NAME
-            //         }/_next/image?url=${encodeURIComponent(image)}&w=384&q=75`
-            //     ).then((res) => res.blob());
+            // const images = post.data.images as string[];
+            //  images.forEach(async (image) => {
+            //     const res = await fetch(
+            //         `${process.env.NEXT_PUBLIC_HOST_NAME}/backend/v1/post/image/${image}`,
+            //         {
+            //             headers: {
+            //                 "Content-Type": "application/json",
+            //                 Authorization: `Bearer ${session?.user.id_token}`,
+            //             },
+            //             cache: "no-cache",
+            //         }
+            //     );
+            //     const blob = await res.blob();
+            //     const file = new File([blob], image, { type: blob.type });
+            //     setImageFiles((prev) => {
+            //         if (prev) {
+            //             const dataTransfer = new DataTransfer();
+            //             Array.from(prev).forEach((file) =>
+            //                 dataTransfer.items.add(file)
+            //             );
+            //             dataTransfer.items.add(file);
+            //             return dataTransfer.files;
+            //         } else {
+            //             return new FileList([file], image);
+            //         }
+            //     });
+
             // });
-            // setImageFiles(imageFiles);
         }
     }, [post]);
 
