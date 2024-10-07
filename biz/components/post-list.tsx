@@ -12,6 +12,7 @@ import { timeAgo } from "@/biz/lib/time-util";
 import { getQueryClient } from "../providers/get-query-client";
 import { useInView } from "react-intersection-observer";
 import Image from "next/image";
+import { PaginatedPostPreviewResponse } from "../types/Post";
 
 const PostList = () => {
     const { data: session } = useSession();
@@ -28,8 +29,9 @@ const PostList = () => {
             queryFn: ({ pageParam = 0 }) =>
                 getPosts(session!.user.id_token!, pageParam, 20),
             initialPageParam: 0,
-            getNextPageParam: (lastPage) => {
-                return !lastPage.data.end ? lastPage.data.page + 1 : undefined;
+            getNextPageParam: (lastPage: PaginatedPostPreviewResponse) => {
+                if (lastPage.numberOfElements <= 0) return undefined;
+                return lastPage.number + 1;
             },
         });
 
@@ -55,7 +57,7 @@ const PostList = () => {
     return (
         <main className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:p-6">
             {data?.pages.map((page) =>
-                page.data.postPreviewResponses.map((post: any) => (
+                page.content.map((post) => (
                     <div
                         key={post.id}
                         className="relative overflow-hidden rounded-lg group border border-muted"
@@ -75,20 +77,20 @@ const PostList = () => {
                                 /> */}
                                 <AvatarImage asChild src={"/next.svg"}>
                                     <Image
-                                        src={post.authorProfile}
-                                        alt={post.author}
+                                        src={post.profileImagePath}
+                                        alt={post.nickname}
                                         width={40}
                                         height={40}
                                     />
                                 </AvatarImage>
                                 <AvatarFallback>
-                                    {post.author.charAt(0)}
+                                    {post.nickname.charAt(0)}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                                 <div className="flex items-center justify-between">
                                     <div className="font-small">
-                                        {post.author}
+                                        {post.nickname}
                                     </div>
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                         <Separator orientation="vertical" />
@@ -112,8 +114,7 @@ const PostList = () => {
                         </div>
                         <Image
                             src={
-                                post.imageFiles[0] ??
-                                "/placeholder_introduce.webp"
+                                post.thumbnail ?? "/placeholder_introduce.webp"
                             }
                             alt={post.title}
                             width={302}
