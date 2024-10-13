@@ -1,6 +1,8 @@
 "use client";
 import { doLike } from "@/biz/api/post-api";
 import { getQueryClient } from "@/biz/providers/get-query-client";
+import { PostResponse } from "@/biz/types/Post";
+import { UserGetResponse } from "@/biz/types/User";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +21,7 @@ import { HeartIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useState } from "react";
 
 export default function PostDetailPage() {
@@ -44,13 +46,13 @@ export default function PostDetailPage() {
                     cache: "no-cache",
                 }
             );
-            return data.json();
+            return data.json() as Promise<PostResponse>;
         },
     });
 
     const handleLike = async () => {
         setLike(!like);
-        await doLike(session!.user.id_token!, post.data.id);
+        await doLike(session!.user.id_token!, post!.id);
         queryClient.invalidateQueries();
     };
 
@@ -68,7 +70,7 @@ export default function PostDetailPage() {
                 }
             );
 
-            return res.json();
+            return res.json() as Promise<UserGetResponse>;
         },
     });
 
@@ -97,7 +99,7 @@ export default function PostDetailPage() {
         e.preventDefault();
 
         try {
-            const response = await writeCommentAction(post.data.id, comment);
+            const response = await writeCommentAction(post!.id, comment);
 
             console.log(response);
             if (response == 200) {
@@ -132,8 +134,16 @@ export default function PostDetailPage() {
         return <div>Error</div>;
     }
 
-    if (!selectedImage && post.data.images.length > 0) {
-        setSelectedImage(post.data.images[0]);
+    if (!post) {
+        return <div>Error...</div>;
+    }
+
+    if (!profile) {
+        redirect("/logout");
+    }
+
+    if (!selectedImage && post.images.length > 0) {
+        setSelectedImage(post.images[0]);
     }
 
     return (
@@ -141,12 +151,9 @@ export default function PostDetailPage() {
             <div className="bg-background rounded-lg border p-6 w-full max-w-lg sm:max-w-5xl">
                 <div className="flex items-center gap-4 mb-4">
                     <Avatar>
-                        <AvatarImage
-                            asChild
-                            src={post.data.authorProfileImagePath}
-                        >
+                        <AvatarImage asChild src={post.profileImagePath}>
                             <Image
-                                src={post.data.authorProfileImagePath}
+                                src={post.profileImagePath}
                                 alt="avatar"
                                 width={40}
                                 height={40}
@@ -156,20 +163,18 @@ export default function PostDetailPage() {
                         <AvatarFallback></AvatarFallback>
                     </Avatar>
                     <div>
-                        <div className="font-medium">{post.data.author}</div>
+                        <div className="font-medium">{post.nickname}</div>
                         <div className="text-sm text-muted-foreground">
                             <time dateTime="2023-08-13 12:34:56">
-                                {new Date(
-                                    post.data.creationDate
-                                ).toLocaleString()}
+                                {new Date(post.creationDate).toLocaleString()}
                             </time>
                         </div>
                     </div>
                 </div>
                 <div className="mb-4">
-                    <h2 className="text-2xl font-bold">{post.data.title}</h2>
+                    <h2 className="text-2xl font-bold">{post.title}</h2>
                     <div className="text-sm text-muted-foreground">
-                        <span>{post.data.placeName}</span>
+                        <span>{post.placeName}</span>
                     </div>
                 </div>
                 <div className="mb-6">
@@ -189,24 +194,22 @@ export default function PostDetailPage() {
                 <div className="space-y-1">
                     <Carousel>
                         <CarouselContent>
-                            {post.data.images.map(
-                                (image: string, index: number) => (
-                                    <CarouselItem
-                                        key={"image" + index}
-                                        className="relative basis-1/3"
-                                        onClick={() => setSelectedImage(image)}
-                                    >
-                                        <Image
-                                            key={`images_${index}`}
-                                            src={image}
-                                            width={300}
-                                            height={200}
-                                            alt="image"
-                                            className="w-full rounded-lg object-cover aspect-[3/2] cursor-pointer transition-opacity duration-300 hover:opacity-80"
-                                        />
-                                    </CarouselItem>
-                                )
-                            )}
+                            {post.images.map((image: string, index: number) => (
+                                <CarouselItem
+                                    key={"image" + index}
+                                    className="relative basis-1/3"
+                                    onClick={() => setSelectedImage(image)}
+                                >
+                                    <Image
+                                        key={`images_${index}`}
+                                        src={image}
+                                        width={300}
+                                        height={200}
+                                        alt="image"
+                                        className="w-full rounded-lg object-cover aspect-[3/2] cursor-pointer transition-opacity duration-300 hover:opacity-80"
+                                    />
+                                </CarouselItem>
+                            ))}
                         </CarouselContent>
 
                         <CarouselPrevious />
@@ -227,31 +230,27 @@ export default function PostDetailPage() {
                         <span className="sr-only">Like</span>
                     </Button>
                     <div className="text-sm text-muted-foreground">
-                        <span className="font-medium">
-                            {post.data.likesCount}
-                        </span>{" "}
+                        <span className="font-medium">{post.likesCount}</span>{" "}
                         likes
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-4">
-                    {post.data.hashtags.map(
-                        (hashtag: string, index: number) => (
-                            <div
-                                key={`hashtag_${index}`}
-                                className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground"
-                            >
-                                #{hashtag}
-                            </div>
-                        )
-                    )}
+                    {post.hashtags.map((hashtag: string, index: number) => (
+                        <div
+                            key={`hashtag_${index}`}
+                            className="bg-muted rounded-full px-3 py-1 text-sm text-muted-foreground"
+                        >
+                            #{hashtag}
+                        </div>
+                    ))}
                 </div>
                 <div className="prose prose-gray dark:prose-invert">
-                    <p> {post.data.content}</p>
+                    <p> {post.content}</p>
                 </div>
 
-                {post.data.mine && (
+                {post.mine && (
                     <div className="flex justify-end py-10 gap-5">
-                        <Link href={`/main/modify/${post.data.id}`}>
+                        <Link href={`/main/modify/${post.id}`}>
                             <Button>수정</Button>
                         </Link>
                         <Button
@@ -265,6 +264,9 @@ export default function PostDetailPage() {
                     </div>
                 )}
 
+                {/* divider */}
+                <hr className="mt-5 mb-5"></hr>
+
                 <div className="space-y-4">
                     <h3 className="text-xl font-bold">Comments</h3>
                     {/* 댓글 입력창 */}
@@ -273,10 +275,10 @@ export default function PostDetailPage() {
                             <Avatar>
                                 <AvatarImage
                                     asChild
-                                    src={profile.data.profileImagePath}
+                                    src={profile.profileImagePath}
                                 >
                                     <Image
-                                        src={profile.data.profileImagePath}
+                                        src={profile.profileImagePath}
                                         alt="avatar"
                                         width={40}
                                         height={40}
@@ -287,7 +289,7 @@ export default function PostDetailPage() {
                             <div className="grid gap-2 flex-1">
                                 <div className="flex items-center gap-2">
                                     <div className="font-medium">
-                                        {profile.data.nickname}
+                                        {profile.nickname}
                                     </div>
                                 </div>
                                 <Textarea
@@ -307,7 +309,7 @@ export default function PostDetailPage() {
                     </div>
                     {/* 댓글 */}
 
-                    {post.data.comments.map((comment: any, index: number) => (
+                    {post.comments.map((comment: any, index: number) => (
                         <div
                             className="flex items-start gap-4"
                             key={"comments" + index}

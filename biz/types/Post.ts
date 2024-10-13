@@ -1,10 +1,27 @@
 import { Pageable, Sort } from "./Page";
 
-interface Post {
-    userId: number;
+export interface PostResponse {
     id: number;
     title: string;
-    body: string;
+    content: string;
+    nickname: string;
+    profileImagePath: string;
+    placeName: string;
+    likesCount: number;
+    images: string[];
+    creationDate: string; // 'yyyy-MM-dd HH:mm:ss' 형식의 문자열로 가정
+    hashtags: string[];
+    comments: CommentResponse[];
+    mine: boolean;
+}
+export interface CommentResponse {
+    id: number; // 댓글 ID
+    content: string; // 댓글 내용
+    createdAt: string; // 'yyyy-MM-dd HH:mm:ss' 형식의 문자열로 가정
+    updatedAt: string; // 'yyyy-MM-dd HH:mm:ss' 형식의 문자열로 가정
+    uuid: string; // 댓글 작성자 ID
+    nickname: string; // 댓글 작성자 닉네임
+    profileImagePath: string; // 댓글 작성자 프로필 이미지 경로
 }
 
 // interface PostPreviewResponse {
