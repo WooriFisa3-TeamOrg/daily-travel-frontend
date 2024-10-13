@@ -1,4 +1,4 @@
-import { getUserInfo } from "@/biz/api/users-api";
+import { getUserInfoQuery } from "@/biz/api/users-api";
 import Profile from "@/biz/components/profile";
 import { authOptions } from "@/biz/lib/authOptions";
 import { getQueryClient } from "@/biz/providers/get-query-client";
@@ -19,7 +19,7 @@ export default async function ProfilePage() {
 
     const queryClient = getQueryClient();
 
-    void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
+    void queryClient.prefetchQuery(getUserInfoQuery(session.user.id_token!));
 
     return (
         <div className="flex justify-center">

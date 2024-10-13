@@ -7,7 +7,7 @@ import { CameraIcon, CheckIcon, FilePenIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { FC, useEffect, useRef, useState } from "react";
-import { getUserInfo } from "../api/users-api";
+import { getUserInfoQuery } from "../api/users-api";
 import { UserGetResponse } from "../types/User";
 import { getQueryClient } from "../providers/get-query-client";
 import { axiosInstance } from "../lib/axios";
@@ -26,7 +26,7 @@ const Profile: FC<ProfileProps> = ({}) => {
     const { data: session, status } = useSession();
 
     const queryClient = getQueryClient();
-    const { data } = useQuery(getUserInfo(session?.user.id_token!));
+    const { data } = useQuery(getUserInfoQuery(session?.user.id_token!));
     console.log(data);
 
     const [queryLoaded, setQueryLoaded] = useState(false);

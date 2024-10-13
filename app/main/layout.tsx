@@ -24,7 +24,7 @@ import { axiosInstance } from "@/biz/lib/axios";
 import { authOptions } from "@/biz/lib/authOptions";
 import { signOut } from "next-auth/react";
 import { getQueryClient } from "@/biz/providers/get-query-client";
-import { getUserInfo } from "@/biz/api/users-api";
+import { getUserInfo, getUserInfoQuery } from "@/biz/api/users-api";
 import AvatarAside from "@/biz/components/avatar-aside";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
@@ -47,9 +47,28 @@ export default async function MainLayout({
         }
     }
 
-    const queryClient = getQueryClient();
+    // const userInfo = await fetch(
+    //     process.env.NEXT_PUBLIC_HOST_NAME + "/backend/v1/user",
+    //     {
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             Authorization: `Bearer ${session.user.id_token!}`,
+    //         },
+    //         cache: "no-cache",
+    //     }
+    // );
+    // if (userInfo.status === 500) {
+    //     redirect("/logout");
+    // }
 
-    void queryClient.prefetchQuery(getUserInfo(session.user.id_token!));
+    try {
+        const userInfo = await getUserInfo(session.user.id_token!);
+    } catch (e) {
+        redirect("/logout");
+    }
+
+    const queryClient = getQueryClient();
+    await queryClient.prefetchQuery(getUserInfoQuery(session.user.id_token!));
 
     return (
         // <div className="flex">
