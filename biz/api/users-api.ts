@@ -55,7 +55,10 @@ export const getUserInfoQuery = (id_token: string) => {
             );
             // console.log("getUserInfoQuery");
             // console.log(await res.text());
-            // console.log(res.status);
+            console.log(res.status);
+            if (res.status === 500) {
+                throw new Error("Error fetching user info");
+            }
 
             return res.json();
         },

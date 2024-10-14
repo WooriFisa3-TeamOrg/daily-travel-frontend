@@ -47,28 +47,14 @@ export default async function MainLayout({
         }
     }
 
-    // const userInfo = await fetch(
-    //     process.env.NEXT_PUBLIC_HOST_NAME + "/backend/v1/user",
-    //     {
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             Authorization: `Bearer ${session.user.id_token!}`,
-    //         },
-    //         cache: "no-cache",
-    //     }
-    // );
-    // if (userInfo.status === 500) {
-    //     redirect("/logout");
-    // }
+    const queryClient = getQueryClient();
+    // await queryClient.prefetchQuery(getUserInfoQuery(session.user.id_token!));
 
     try {
-        const userInfo = await getUserInfo(session.user.id_token!);
+        await queryClient.fetchQuery(getUserInfoQuery(session.user.id_token!));
     } catch (e) {
         redirect("/logout");
     }
-
-    const queryClient = getQueryClient();
-    await queryClient.prefetchQuery(getUserInfoQuery(session.user.id_token!));
 
     return (
         // <div className="flex">
