@@ -24,7 +24,6 @@ interface WriteFormProps {}
 const WriteForm: FC<WriteFormProps> = ({}) => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
-    const [placeName, setPlaceName] = useState("");
     const [imageFiles, setImageFiles] = useState<File[] | null>(null);
     const [hashtags, setHashtags] = useState<string[]>([]);
     const { data: session } = useSession();
@@ -95,7 +94,6 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
         const formData = new FormData();
         formData.append("title", title);
         formData.append("content", content);
-        formData.append("placeName", placeName);
         if (imageFiles) {
             Array.from(imageFiles).forEach((image) =>
                 formData.append("imageFiles", image)
@@ -159,15 +157,6 @@ const WriteForm: FC<WriteFormProps> = ({}) => {
                             className="rounded-md border border-muted px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                        />
-                    </div>
-                    <div className="py-2">
-                        <Label htmlFor="place">장소 이름</Label>
-                        <Input
-                            id="place"
-                            placeholder="Enter place details"
-                            value={placeName}
-                            onChange={(e) => setPlaceName(e.target.value)}
                         />
                     </div>
                     <div className="py-2">
